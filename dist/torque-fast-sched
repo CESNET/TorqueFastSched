@@ -1,0 +1,75 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Provides:          pbs_sched
+# Required-Start:    $all
+# Required-Stop:     $all
+# Should-Start:      $all
+# Should-Stop:       $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start and stop the Torque scheduler
+# Description:       PBS is a versatile batch system for SMPs and clusters.
+#                    This script controls the scheduler.
+### END INIT INFO
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=/usr/sbin/torque_fast_sched
+NAME=torque_fast_sched
+DESC="Torque scheduler"
+PIDFILE=/var/spool/torque/sched_priv/sched.lock
+
+test -x $DAEMON || exit 0
+
+# Include defaults if available
+if [ -f /etc/default/$NAME ] ; then
+	. /etc/default/$NAME
+elif [ -f /etc/default/torque ]; then
+	. /etc/default/torque
+fi
+
+# set -e cannot work, otherwise the log_end_msg will not be shown
+# set -e
+
+# Load lsb functions
+. /lib/lsb/init-functions
+
+
+case "$1" in
+  start)
+	log_begin_msg "Starting $DESC: "
+	start-stop-daemon --start --retry 3600 --quiet --pidfile $PIDFILE --exec $DAEMON -- $DAEMON_OPTS
+	log_end_msg $?
+	;;
+  stop)
+	log_begin_msg "Stopping $DESC: "
+	start-stop-daemon --stop --retry 3600 --quiet --pidfile $PIDFILE --exec $DAEMON
+	log_end_msg $?
+	;;
+  reload)
+	# send a SIGHUP to force scheduler to reload config file
+	log_begin_msg "Reloading $DESC configuration files"
+	start-stop-daemon --stop --signal 1 --quiet --pidfile $PIDFILE --exec $DAEMON
+	log_end_msg $?
+        ;;
+  force-reload)
+	# check whether $DAEMON is running. If so, restart
+	start-stop-daemon --stop --test --quiet --pidfile $PIDFILE --exec $DAEMON \
+	&& $0 restart \
+	|| exit 0
+	;;
+  restart)
+    log_begin_msg "Restarting $DESC: "
+	start-stop-daemon --stop --retry 3600 --quiet --pidfile $PIDFILE --exec $DAEMON
+	sleep 1
+	start-stop-daemon --start --retry 3600 --quiet --pidfile $PIDFILE --exec $DAEMON -- $DAEMON_OPTS
+	log_end_msg $?
+	;;
+  *)
+	N=/etc/init.d/`basename $0`
+	log_success_msg "Usage: $N {start|stop|restart|force-reload}"
+	exit 1
+	;;
+esac
+
+exit 0

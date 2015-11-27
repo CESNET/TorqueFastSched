@@ -1,0 +1,4 @@
+debian/tmp/usr/share/man/man8/pbs_sched.8
+debian/tmp/usr/share/man/man8/pbs_sched_basl.8
+debian/tmp/usr/share/man/man8/pbs_sched_cc.8
+debian/tmp/usr/share/man/man8/pbs_sched_tcl.8

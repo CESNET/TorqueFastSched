@@ -1,0 +1,21 @@
+#!/bin/sh
+
+#DEBHELPER#
+
+USAGE_ORIG=/var/spool/torque/sched_priv/usage
+USAGE_DFLT=/var/spool/torque/sched_priv/usage.default
+
+if [ -r $USAGE_ORIG ]; then
+	if [ ! -f $USAGE_DFLT ]; then
+		cp $USAGE_ORIG $USAGE_DFLT;
+	fi
+fi
+
+GRP_ORIG=/var/spool/torque/sched_priv/resource_group
+GRP_DFLT=/var/spool/torque/sched_priv/resource_group.default
+
+if [ -r $GRP_ORIG ]; then
+	if [ ! -f $GRP_DFLT ]; then
+		cp $GRP_ORIG $GRP_DFLT;
+	fi
+fi

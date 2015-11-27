@@ -1,0 +1,1022 @@
+torque-meta (2.4.143+DEBIAN_VERSION) unstable; urgency=low
+
+  * [server] log server cycle length
+  * [server] store job id in cluster cache metric
+  * [server] fixes for memory leaks in Kerberos code
+  * [mom] initial cgroup support
+  * [cmd] speed up qhold na qsig clients by holding server connections
+
+ -- Simon Toth <simon@cesnet.cz>  Thu, 25 Jun 2015 22:45:00 +0100
+
+torque-meta (2.4.141+DEBIAN_VERSION) unstable; urgency=low
+
+  * [client] pbs_track now accepts specific pids (-p PID)
+
+ -- Simon Toth <simon@cesnet.cz>  Fri, 27 Mar 2015 14:00:00 +0100
+
+torque-meta (2.4.140+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] left-over scratch space recalculation
+  * [mom] support for prologue/epilogue sub-scripts
+  * [dev] API man pages are now packed with libtorque-dev
+
+ -- Simon Toth <simon@cesnet.cz>  Wed, 25 Feb 2015 15:00:00 +0100
+
+torque-meta (2.4.139+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] momctl returns non-zero value upon error
+  * [mom] correctly detect momctl failures when cleaning up stale GPU allocations
+  * [mom] security fix - check ownership when attaching a process to job
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 16 Feb 2015 12:45:00 +0100 
+
+torque-meta (2.4.138+DEBIAN_VERSION) unstable; urgency=low
+
+  * [package] version bump
+
+ -- Simon Toth <simon@cesnet.cz>  Fri, 30 Jan 2015 11:40:00 +0100
+
+torque-meta (2.4.137+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] fixed issue in nodespec parsing
+
+ -- Simon Toth <simon@cesnet.cz>  Thu, 29 Jan 2015 16:30:00 +0100
+
+torque-meta (2.4.136+DEBIAN_VERSION) unstable; urgency=low
+  
+  * [scheduler] fixes in P2P scheduling support
+  * [scheduler] low amounts of resources are correctly rounded up
+  * [server] low amounts of resoruces are correctly rounded up
+  * [node] tweak in scratch over limit reporting log format
+
+ -- Simon Toth <simon@cesnet.cz>  Thu, 22 Jan 2015 16:15:00 +0100
+
+torque-meta (2.4.135+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom,svr,sched] do not report/send 0 mem/vmem requests
+  * [server] log sched_nodespec to account log
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 8 Dec 2014 16:30:00 +0100
+
+torque-meta (2.4.134+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] rmdir path fix
+  * [mom] ondemand cluster fixes
+  * [mom] correctly bail on magrathea lock failure 
+
+ -- Simon Toth <simon@cesnet.cz>  Tue, 2 Dec 2014 10:00:00 +0100
+
+torque-meta (2.4.133+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] quick fix for magrathea locking
+
+ -- Simon Toth <simon@cesnet.cz>  Tue, 25 Nov 2014 11:45:00 +0100
+
+torque-meta (2.4.132+DEBIAN_VERSION) unstable; urgency=low
+
+  * [server] apply sloppy group applies even when users specified a group on job
+  * [scheduler] C++ scheduler rewrite
+  * [scheduler] do not limit the number of admin jobs executed in one scheduling cycle
+  * [scheduler] backfilling scheduling support
+  * [mom] magrathea locking
+  * [mom] fixes for node scripts
+  * [server,scheduler] new software licenses
+
+ -- Simon Toth <simon@cesnet.cz>  Sun, 23 Nov 2014 20:00:00 +0100 
+
+torque-meta (2.4.131+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] changed logging in cron scripts - daemon name & criticality
+  * [mom] nodes now restart even when single node jobs are currently running
+  * [scheduler] fixed problem with decay not triggering
+
+ -- Simon Toth <simon@cesnet.cz>  Thu, 25 Sep 2014 17:00:00 +0100
+
+torque-meta (2.4.130+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] small changes in cron scripts
+  * [server] new job attribute interactive_submit
+
+ -- Simon Toth <simon@cesnet.cz>  Wed, 17 Sep 2014 23:00:00 +0100
+
+torque-meta (2.4.129+DEBIAN_VERSION) unstable; urgency=low
+
+  * [server] infiniband property implies -l place=infiniband
+  * [mom] fixed a problem with memory deallocation
+  * [mom] scratch script improvements (syslog)
+  * [mom] added cron script that reports users using more scratch than requested
+  * [server] added nodespec validation before node assignment
+ 
+ -- Simon Toth <simon@cesnet.cz>  Mon, 15 Sep 2014 14:45:00 +0100
+
+torque-meta (2.4.128+DEBIAN_VERSION) unstable; urgency=low
+
+  * [server,client] new job attributes for CERIT
+
+ -- Simon Toth <simon@cesnet.cz>  Tue, 22 Jul 2014 15:45:00 +0100
+
+torque-meta (2.4.127+DEBIAN_VERSION) unstable; urgency=low
+
+  * [server] Fixed problems in storing attributes
+  * [mom] Added fsync to prevent unrecoverable states
+  * [client] pbsnodes wrapper now handles short hostnames and aliases
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 21 Jul 2014 16:15:00 +0100
+
+torque-meta (2.4.126+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] fixes in leftover scratch reporting
+
+ -- Simon Toth <simon@cesnet.cz>  Fri, 18 Jul 2014 16:00:00 +0100
+
+torque-meta (2.4.125+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] scratch_priority cache metric in the format of A;B;C (ssd, shared, local)
+  * [mom] changes in prologues, logging to /tmp removed, shared scratch creation error detection tweaked
+
+ -- Simon Toth <simon@cesnet.cz>  Wed, 16 Jul 2014 14:30:00 +0100
+
+torque-meta (2.4.124+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] decrease amount of information reported from nodes to pbs_cache
+
+ -- Simon Toth <simon@cesnet.cz>  Tue, 24 Jun 2014 15:00:00 +0100
+
+torque-meta (2.4.123+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] report scratch capacity in status
+  * [scheduler] handle new format of scratch scheduling
+
+ -- Simon Toth <simon@cesnet.cz>  Fri, 20 Jun 2014 12:45:00 +0100
+
+torque-meta (2.4.122+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] fixes in scratch handling (leftover data)
+
+ -- Simon Toth <simon@cesnet.cz>  Tue, 17 Jun 2014 14:45:00 +0100
+
+torque-meta (2.4.121+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] quick fix for return value out of range
+  * [mom] don't start job if scratch directory cannot be created
+  * [mom] count size of left over scratch space
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 16 Jun 2014 13:10:00 +0100
+
+torque-meta (2.4.120+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] quick fix for crash in fairshare calculation
+  * [mom] prologue fix for scratch directory management
+
+ -- Simon Toth <simon@cesnet.cz>  Wed, 4 Jun 2014 13:20:00 +0100
+
+torque-meta (2.4.119+DEBIAN_VERSION) unstable; urgency=low
+
+  * [lib] security fix in dis protocol (check overflow)
+  * [server] crash fix for empty resources in job submission
+  * [server/scheduler] new licenses (geneious, clcgenomics)
+  * [mom] rewritten gpu allocation routine, now verifies consistency of allocations
+
+ -- Simon Toth <simon@cesnet.cz>  Wed, 28 May 2014 13:15:00 +0100
+
+torque-meta (2.4.117+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] changed cycle length limit semantic, scheduler cycle will not end if no jobs were yet executed
+  * [scheduler] new scheduler limit for per-user exected jobs
+  * [scheduler] fixed avail_before node flag
+  * [scheduler] fixed memory issues
+  * [mom] fixed inconsistent values of TORQUE_RESC_TOTAL_PROCS for exclusive requests
+  * [mom] fixed inconsistent values of PBS_NUM_PPN, PBS_NUM_NODES
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 5 May 2014 13:15:00 +0100
+
+torque-meta (2.4.116+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] fixed available_before node attribute scheduling
+  * [scheduler] location scheduling support using -l place=...
+
+ -- Simon Toth <simon@cesnet.cz>  Tue, 1 Apr 2014 16:00:00 +0100
+
+torque-meta (2.4.115+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] support for multiple fairshare trees on a single server
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 3 Mar 2014 07:45:00 +0100
+
+torque-meta (2.4.114+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] changed access rights for base scratch directory to 0711
+
+ -- Simon Toth <simon@cesnet.cz>  Wed, 12 Feb 2014 01:30:00 +0100
+
+torque-meta (2.4.113+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] scratch directory now created according to users provided umask
+  * [mom] base scratch directory now with 0511 access rights
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 10 Feb 2014 15:45:00 +0100
+
+torque-meta (2.4.112+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] add group ownership change for scratch directory
+  * [scheduler] fix initialization issue in fairshare calculation
+
+ -- Simon Toth <simon@cesnet.cz>  Fri, 7 Feb 2014 15:15:00 +0100
+
+torque-meta (2.4.111+DEBIAN_VERSION) unstable; urgency=low
+
+  * [server,scheduler] new node atributes (available_before, available_after) taking POSIX time, includes scheduling support
+  * [scheduler] exclusive jobs are now planned onto all resources
+  * [server] security fix for email sending
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 27 Jan 2014 22:40:00 +0100
+
+torque-meta (2.4.110+DEBIAN_VERSION) unstable; urgency=low
+
+  * [server,scheduler] new minspec and maxspec submittion attributes
+  * [scheduler] nodes are now scheduled in the correct order as specified by the nodespec
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 16 Dec 2013 15:40:00 +0100
+
+torque-meta (2.4.109+DEBIAN_VERSION) unstable; urgency=low
+
+  * [server,scheduler,mom] ondemand clusters support
+
+ -- Simon Toth <simon@cesnet.cz>  Tue, 10 Dec 2013 17:20:00 +0100
+
+torque-meta (2.4.108+DEBIAN_VERSION) unstable; urgency=low
+
+  * [server] initialize network before jobs, to prevent SIGSEGV on cross-server job dependencies
+
+ -- Simon Toth <simon@cesnet.cz>  Sat, 7 Dec 2013 16:00:00 +0100
+
+torque-meta (2.4.107+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] added limit for concurrently building machines max_installing_nodes
+  * [scheduler] fixed issue with resource overflow
+
+ -- Simon Toth <simon@cesnet.cz>  Thu, 5 Dec 2013 02:00:00 +0100
+
+torque-meta (2.4.106+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] fixed node assignment mechanism
+  * [build] fixes in the autotools configuration for debian7 and general errors
+  * [scheduler] improved starvation mechanism
+
+ -- Simon Toth <simon@cesnet.cz>  Wed, 27 Nov 2013 19:50:00 +0100
+
+torque-meta (2.4.105+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] scheduler rewritten into a node filtering mode
+  * [scheduler] completely rewritten node ordering
+  * [scheduler] switched fairshare model to a multi-resource model
+
+ -- Simon Toth <simon@cesnet.cz>  Tue, 26 Nov 2013 09:00:00 +0100
+
+torque-meta (2.4.104+DEBIAN_VERSION) unstable; urgency=low
+
+  * [lib] switched to /usr/lib from /usr/lib64
+  * [server] new fairshare_coef on nodes and queues (default 1.0)
+  * [server] new machine_spec attribute
+  * [client] fixed an issue with queue description not being accessible by qmgr
+
+ -- Simon Toth <simon@cesnet.cz>  Fri, 15 Nov 2013 13:15:00 +0100
+
+torque-meta (2.4.103+DEBIAN_VERSION) unstable; urgency=low
+
+  * [server] new required queue attributes description_en, description_cs
+  * [server] queue_purpose is now required for execution queues
+  * [mom] verify that pbs batch connections are comming from a server
+  * [mom] only kill ticket renewal process on SIGKILL signal
+
+ -- Simon Toth <simon@cesnet.cz>  Sun, 20 Oct 2013 22:30:00 +0100
+
+torque-meta (2.4.102+DEBIAN_VERSION) unstable; urgency=low
+
+  * [server] fix for race condition in offline node detection
+  * [server] base code for on-demand clusters
+  * [mom] increased connection timeout
+  * [mom] record statistics of scratch usage
+  * [scheduler] fix for shared scratch scheduling
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 7 Oct 2013 15:40:00 +0100
+
+torque-meta (2.4.101+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] complete rewrite of all fitness testing routines
+  * [scheduler] all fitness testing routines now return tri-value results (never, occupied, avail)
+  * [scheduler] now detects and reports (log + job comment) jobs that will never run
+  * [mom] changed dependencies of the pbs_mom init script
+  * [mom] job start timeout increased to 15 minutes (for slow preemption)
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 12 Aug 2013 13:15:00 +0100
+
+torque-meta (2.4.100+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] -W umask=0xxx is now applied to job files as well
+  * [mom] blocked error messages from scratch directory removal
+  * [server] new node attribute - priority
+  * [scheduler] code refactoring
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 22 Jul 2013 17:00:00 +0100
+
+torque-meta (2.4.99+DEBIAN_VERSION) unstable; urgency=low
+
+  * [server] enhanced P2P support, job updates are now propagated to original job
+
+ -- Simon Toth <simon@cesnet.cz>  Fri, 21 Jun 2013 13:30:00 +0100
+
+torque-meta (2.4.98+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] export scratch variables for situations when :first option is used
+  * [server] fixed issues with state counting
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 17 Jun 2013 14:00:00 +0100
+
+torque-meta (2.4.97+DEBIAN_VERSION) unstable; urgency=low
+
+  * [server] allow server to write into LB attributes
+
+ -- Simon Toth <simon@cesnet.cz>  Fri, 7 Jun 2013 13:00:00 +0100
+
+torque-meta (2.4.96+DEBIAN_VERSION) unstable; urgency=low
+
+  * [server] only purge remote job when the local job is in completed state
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 27 May 2013 22:30:00 +0100
+
+torque-meta (2.4.95+DEBIAN_VERSION) unstable; urgency=low
+
+  * [client] qmgr now displays admin slots
+  * [server] fixed admin slot unset issue (processor count increase)
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 27 May 2013 15:30:00 +0100
+
+torque-meta (2.4.94+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] fix for upgrade issue
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 13 May 2013 19:15:00 +0100
+
+torque-meta (2.4.93+DEBIAN_VERSION) unstable; urgency=low
+
+  * [lib] support for floating point attribute type
+  * [mom] treat resource violation kill as job abort
+  * [mom] correctly send information about job kill between slave<->master nodes
+  * [lib] new resources "cpu_performance" (node), "fairshare" (job)
+  * [mom] new node configuration option cpufactor (float type)
+  * [server] cross-server shadow jobs are deleted when the real job is purged
+  * [server,lib] cross-server shadow jobs now report state "X"
+  * [scheduler,server,lib] multiple memory leak fixes
+  * [lib] cleaned up pbs_environment
+  * [mom] fixed scratch reporting script (tests for mount before reporting)
+  * [mom] added support for minimum time between LB resource reports
+  * [scheduler] code cleanup in scheduler
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 13 May 2013 11:30:00 +0100
+
+torque-meta (2.4.92+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] change of scheduler architecture to client
+  * [scheduler] known resources are now configurable
+  * [scheduler] scheduler will no longer exit upon encountering a server time-out
+  * [scheduler] scheduler code moved to scheduler.meta directory
+  * [scheduler] scheduler now has a C++ main
+  * [build] configure.ac options for different ports and world scheduler were replaced with a single --enable-meta-fork
+  * [mom] resource violations will now be logged even when job is killed
+
+ -- Simon Toth <simon@cesnet.cz>  Wed, 17 Apr 2013 15:45:00 +0100
+
+torque-meta (2.4.91+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom,server] lb fixes for debian 6
+
+ -- Simon Toth <simon@cesnet.cz>  Fri, 29 Mar 2013 17:30:00 +0100
+
+torque-meta (2.4.90+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] fix for lb environment
+  * [mom] fix for jobs stuck at exiting (JobsToResend)
+  * [scheduler] new fairshare with priority (fair_share_with_priority)
+  * [scheduler,mom] fixes in scratch handling
+  * [server] non-integer values for integer resources are now rejected
+
+ -- Simon Toth <simon@cesnet.cz>  Tue, 26 Mar 2013 03:30:00 +0100
+
+torque-meta (2.4.89+DEBIAN_VERSION) unstable; urgency=low
+
+  * [global] deb6 only update
+
+ -- Simon Toth <simon@cesnet.cz>  Wed, 6 Mar 2013 19:00:00 +0100
+
+torque-meta (2.4.88+DEBIAN_VERSION) unstable; urgency=low
+
+  * [server] zero size scratch request is now interpreted as no scratch
+  * [server] account log now contains resc_req_total
+
+ -- Simon Toth <simon@cesnet.cz>  Tue, 5 Mar 2013 01:45:00 +0100
+
+torque-meta (2.4.87+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] report_scratch script path fixed
+  * [server] fixed issue with satisfied dependencies not being handled correctly
+  * [global] disallow resources with empty values "resc="
+  * [scheduler] added missing support for terabyte sizes
+  * [server] don't log add_cluster messages anymore (zero information value and huge log volume)
+  * [mom] fixed scratch env export
+  * [global] few compilation fixes (warning cleanup)
+
+ -- Simon Toth <simon@cesnet.cz>  Sat, 2 Mar 2013 16:00:00 +0100
+
+torque-meta (2.4.86+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] added /usr/sbin path to update_cache in report_scratch script
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 25 Feb 2013 10:30:00 +0100
+
+torque-meta (2.4.85+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] new scratch scheduling logic
+  * [lib] added posibility to disable kerberos using env. TORQUE_IGNORE_KERBEROS
+  * [mom] changed GPU allocation strategy
+  * [scheduler] reimplementation of scratch space handling
+  * [server] reimplementation of scratch space handling
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 25 Feb 2013 02:45:00 +0100
+
+torque-meta (2.4.84+DEBIAN_VERSION) unstable; urgency=low
+
+  * [build] more changes in LB cron
+  * [mom] change in mom epilogue to avoid a warning
+
+ -- Simon Toth <simon@cesnet.cz>  Thu, 7 Feb 2013 04:35:00 +0100
+
+torque-meta (2.4.83+DEBIAN_VERSION) unstable; urgency=low
+
+  * [build] Debian 6 fixes
+
+ -- Simon Toth <simon@cesnet.cz>  Tue, 5 Feb 2013 04:00:00 +0100
+
+torque-meta (2.4.82+DEBIAN_VERSION) unstable; urgency=low
+
+  * [build] fixed LB cron
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 4 Feb 2013 12:15:00 +0100
+
+torque-meta (2.4.81+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] changed gpu allocation style
+  * [mom] LB support
+  * [server] LB support
+  * [client] qstat no longer invokes qfree
+
+ -- Simon Toth <simon@cesnet.cz>  Fri, 1 Feb 2013 10:00:00 +0100
+
+torque-meta (2.4.80+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] mom now ignores unknown resources
+  * [client] new qfree script
+
+ -- Simon Toth <simon@cesnet.cz>  Wed, 16 Jan 2013 14:00:00 +0100
+
+torque-meta (2.4.78+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] new cron script for reporting scratch space
+  * [mom] new directory for mom scripts
+  * [mom] new exported variables in magrathea prologue
+  * [server] improved cron script for converting job files
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 10 Dec 2012 13:30:00 +0100
+
+torque-meta (2.4.76+DEBIAN_VERSION) unstable; urgency=low
+
+  * [server] cloud node property no longer stored in node file
+  * [server] SIGTERM now behaves as qterm -t quick
+  * [server] fixed incorrect admin job processing on server
+  * [server] fixed issue where server ignored the nodespec provided by scheduler
+  * [scheduler] better handling of protocol timeouts
+  * [scheduler] scheduler now follows the server configuration of run timeout
+  * [mom] force ownership of base scratch directory
+  * [mom] changed unknown attribute logic from reject to ignore
+  * [mom] improved epilogue handling
+
+ -- Simon Toth <simon@cesnet.cz>  Fri, 9 Nov 2012 15:30:00 +0100
+
+torque-meta (2.4.75+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] fixed duplicate epilogue spawning
+
+ -- Simon Toth <simon@cesnet.cz>  Fri, 31 Aug 2012 17:00:00 +0100
+
+torque-meta (2.4.74+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] improved magrathea prologue, option for not reinstalling image, logging current image
+
+ -- Simon Toth <simon@cesnet.cz>  Tue, 28 Aug 2012 14:10:00 +0100
+
+torque-meta (2.4.73+DEBIAN_VERSION) unstable; urgency=low
+
+  * [build] init scripts for pbs_mom now specify additional dependencies
+  * [build] cron file for processing job files added to server package
+  * [client] error handling in printjob improved
+  * [mom] new options and logic for resource violation
+  * [mom] root tasks are now handled better
+
+ -- Simon Toth <simon@cesnet.cz>  Fri, 24 Aug 2012 9:10:00 +0100
+
+torque-meta (2.4.72+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] queue mismatch fix
+  * [server] archive old jobs
+
+ -- Simon Toth <simon@cesnet.cz>  Thu, 16 Aug 2012 13:00:00 +0100
+
+torque-meta (2.4.71+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] fixed typo in prologue (scratch)
+  * [mom] decreased threshold for cpu bug to system_cpus * walltime * 1.1
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 12 Aug 2012 14:00:00 +0100
+
+torque-meta (2.4.70+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] changed kerberos renewal process, tickets are renewed sooner, and process doesn't end with first failure
+  * [mom] SCRATCH variable is now identical to SCRATCHDIR
+  * [mom] jobs running their epilogue should not longer get stuck in existing state when pbs_mom is restarted
+
+ -- Simon Toth <simon@cesnet.cz>  Tue, 10 Jul 2012 13:30:00 +0100
+
+torque-meta (2.4.68+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] fix for non-interactive job environment generation
+
+ -- Simon Toth <simon@cesnet.cz>  Tue, 26 Jun 2012 12:15:00 +0100
+
+torque-meta (2.4.67+DEBIAN_VERSION) unstable; urgency=low
+
+  * [server] new queue atributes max_proc, max_user_proc, max_group_proc
+  * [scheduler] new scheduling logic for limiting amount of used processors (per queue, user/queue, group/queue)
+
+ -- Simon Toth <simon@cesnet.cz>  Sun, 24 Jun 2012 03:00:00 +0100
+
+torque-meta (2.4.65+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] fixed crash with virtual clusters
+
+ -- Simon Toth <simon@cesnet.cz>  Tue, 19 Jun 2012 12:00:00 +0100
+
+torque-meta (2.4.64+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] exclusive jobs will now ignore memory limits (configurable)
+  * [mom] exclusive jobs will now ignore virtual memory limits (configurable)
+  * [mom] exclusive jobs will now ignore cpu time limits
+  * [mom] singular jobs (single job on node) can be configured to be treated as exclusive
+  * [mom] momctl can now query list of users
+  * [mom] prologue now passes the number of cores to magrathea
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 18 Jun 2012 16:30:00 +0100
+
+torque-meta (2.4.63+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] skip resource checks for exclusive requests
+
+ -- Simon Toth <simon@cesnet.cz>  Thu, 14 Jun 2012 14:15:00 +0100
+
+torque-meta (2.4.62+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] bug fixes and improvements in generated environment
+
+ -- Simon Toth <simon@cesnet.cz>  Wed, 13 Jun 2012 12:45:00 +0100
+
+torque-meta (2.4.61+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] job environment generated using script
+
+ -- Simon Toth <simon@cesnet.cz>  Tue, 12 Jun 2012 13:45:00 +0100
+
+torque-meta (2.4.60+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] improved logging of resource violation
+  * [server] new format of communication with scheduler
+
+ -- Simon Toth <simon@cesnet.cz>  Thu, 7 Jun 2012 10:30:00 +0100
+
+torque-meta (2.4.59+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] fixed creation of scratch directories for non-magrathea nodes
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 4 Jun 2012 14:00:00 +0100
+
+torque-meta (2.4.58+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] new version of magrathea prologue
+  * [server] long and long long resources now must have a value
+  * [server] merged hasprop and hasadprop
+  * [mom] improved logging of cpu usage checks
+  * [server] modified hasres to work correctly with admin jobs
+  * [server] moved machine_cluster set up to first stage of cloud start to remove a race condition
+
+ -- Simon Toth <simon@cesnet.cz>  Thu, 31 May 2012 14:30:00 +0100
+
+torque-meta (2.4.57+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] added the creation and cleanup of user/job specific directories in scratch
+
+ -- Simon Toth <simon@cesnet.cz>  Thu, 24 May 2012 13:00:00 +0100
+
+torque-meta (2.4.56+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] improved logging of resource over-use
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 21 May 2012 14:00:00 +0100
+
+torque-meta (2.4.55+DEBIAN_VERSION) unstable; urgency=low
+
+  * [qsub] fixed issue with expired ticket being pulled
+  * [mom] extended logging of resource over-use problems
+  * [mom] fixed issue with spaces in return file paths
+  * [mom] added job comment modification on resource over-use
+
+ -- Simon Toth <simon@cesnet.cz>  Fri, 18 May 2012 14:00:00 +0100
+
+torque-meta (2.4.54+DEBIAN_VERSION) unstable; urgency=low
+
+  * [qsub] fixed issues with qsub pulling kerberos ticket even with -K option
+  * [qsub] limited number of reties in kerberos ticket acquire
+  * [qsub,server] fixed diagnostic for bad kerberos ticket when accessing server
+  * [qsub] fixed a memory error causing crashes
+  * [lib] turned on keep-alive on sockets
+
+ -- Simon Toth <simon@cesnet.cz>  Sun, 13 May 2012 21:00:00 +0100
+
+torque-meta (2.4.53+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] admin slot logic fixed
+
+ -- Simon Toth <simon@cesnet.cz>  Fri, 20 Apr 2012 19:45:00 +0100
+
+torque-meta (2.4.52+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] igncput now turns off killing jobs exceeding cpu allocation
+  * [mom] jobs exceeding (v)memory and cpu time will get logged when simulated killing is turned off and ign(v)mem or igncput is turned on
+
+ -- Simon Toth <simon@cesnet.cz>  Fri, 20 Apr 2012 15:30:00 +0100
+
+torque-meta (2.4.51+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] correctly schedule admin slots
+  * [scheduler] starving turned off for admin jobs
+  * [scheduler] fairshare is now computed from walltime and processor count
+  * [mom] fixed issue with total resources not being updated when running jobs resources changed
+
+ -- Simon Toth <simon@cesnet.cz>  Thu, 19 Apr 2012 18:00:00 +0100
+
+
+torque-meta (2.4.50+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] add missing include
+
+ -- Simon Toth <simon@cesnet.cz>  Mon, 2 Apr 2012 14:10:00 +0100
+
+torque-meta (2.4.49+DEBIAN_VERSION) unstable; urgency=low
+
+  * [clients] qfree modified to correctly list licenses
+
+ -- Simon Toth <simon@cesnet.cz>  Sun, 4 Mar 2012 17:30:00 +0100
+
+torque-meta (2.4.47+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] cloud prologue fixed (decreased aggressivity of status checking)
+  * [scheduler] prevent concurrent run of multiple clusters on one physical node
+
+ -- Simon Toth <simon@cesnet.cz>  Fri, 24 Feb 2012 11:30:00 +0100
+
+torque-meta (2.4.46+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] fixed prologue (gpu file permissions)
+  * [server] fixed issue with exclusive node flag being reset by admin jobs
+
+ -- Simon Toth <simon@cesnet.cz>  Tue, 21 Feb 2012 15:45:00 +0100
+
+torque-meta (2.4.45+DEBIAN_VERSION) unstable; urgency=low
+  
+  * [mom] parsing of resources added
+  * [mom] ulimits are now correctly set
+  * [mom] resources are now correctly checked
+  * [mom] new variables for job and prologue environments
+  * [server] new resources
+  * [lib] fixed issue with 32bit int being used as resource value carrier
+
+ -- Simon Toth <simon@cesnet.cz>  Fri, 17 Feb 2011 11:30:00 +0100
+
+torque-meta (2.4.44+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] rewritten magrathea prologue
+
+ -- Simon Toth <simon@cesnet.cz>  Wed, 7 Dec 2011 14:15:00 +0100
+
+torque-meta (2.4.43+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] added configurable time limit for scheduling cycle
+  * [mom] skip user account check on sister nodes
+  * [scheduler] don't check memory for admin jobs
+  * [server] fixed issue with incorrect restart (cloud node attribute)
+  * [mom] new version of virtualization prologue
+
+ -- Simon Toth <simon@cesnet.cz>  Wed, 16 Nov 2011 22:40:00 +0100
+
+torque-meta (2.4.42+DEBIAN_VERSION) unstable; urgency=low
+
+  * [server] various fixes (memory leaks)
+  * [global] new public version
+
+ -- Simon Toth <simon@cesnet.cz>  Tue, 26 Oct 2011 16:45:00 +0100
+
+torque-meta (2.4.41+DEBIAN_VERSION) unstable; urgency=low
+
+  * [lib] fix problem with errno being checked even when command succeeded
+  * [lib] increase tcp buffer size exponentially, until 40MB are reached
+  * [scheduler] check correctly all licenses
+  * [server] new kerberos ACL
+  * [server] NULL crash fix
+  * [mom] fix calculation of wait time 
+  * [mom] store resources used in job
+
+ -- Simon Toth <toth@fi.muni.cz>  Tue, 16 Aug 2011 15:00:00 +0100
+
+torque-meta (2.4.37+DEBIAN_VERSION) unstable; urgency=low
+
+  * [build] add interpreter line to cron scripts
+
+ -- Simon Toth <toth@fi.muni.cz>  Wed, 3 Aug 2011 10:15:00 +0100
+
+torque-meta (2.4.36+DEBIAN_VERSION) unstable; urgency=low
+
+  * [build] wait 1 hour for all stop/start/restart actions
+
+ -- Simon Toth <toth@fi.muni.cz>  Tue, 2 Aug 2011 13:00:00 +0100
+
+torque-meta (2.4.35+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] log errors when reading information from pbs cache
+  * [scheduler] don't allow queues with no required properties and no dedicated nodes to access nodes dedicated to other queues
+  * [scheduler] add matlab toolboxes to scheduler
+  * [mom] fix pooling time calculation
+
+ -- Simon Toth <toth@fi.muni.cz>  Mon, 1 Aug 2011 18:30:00 +0100
+
+torque-meta (2.4.34+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] code converted into C++
+  * [lib] nodespec library converted into C++
+  * [server] admin slots
+  * [scheduler] support for admin slots
+  * [server] new queue attribute queue_purpose
+
+ -- Simon Toth <toth@fi.muni.cz>  Mon, 25 Jul 2011 00:10:00 +0100
+
+torque-meta (2.4.33+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] ensure that epilogue is run after each successfull prologue
+
+ -- Simon Toth <toth@fi.muni.cz>  Fri, 15 Jul 2011 11:30:00 +0100
+
+torque-meta (2.4.31+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] temorary fix for insufficient buffer size in nodespec creation
+  * [mom] completely rewritten magrathea prologue
+
+ -- Simon Toth <toth@fi.muni.cz>  Mon, 14 Jul 2011 12:05:00 +0100
+
+torque-meta (2.4.30+DEBIAN_VERSION) unstable; urgency=low
+
+  * [server] renamed starving_support to job_starving_after
+  * [mom] don't check whether user has account for cloud jobs
+
+ -- Simon Toth <toth@fi.muni.cz>  Mon, 11 Jul 2011 15:05:00 +0100
+
+torque-meta (2.4.29+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] code cleanup
+  * [scheduler] limit pbs cache calls to speed up scheduler
+  * [scheduler] node marking and skiping if full
+  * [scheduler] fixed bootable tests
+  * [server] fixed null pointer dereference
+  * [server] statistics toolbox resource
+  * [mom] don't mark resources as default to prevent loss on restart
+
+ -- Simon Toth <toth@fi.muni.cz>  Fri, 3 Jun 2011 12:50:00 +0100
+
+torque-meta (2.4.28+DEBIAN_VERSION) unstable; urgency=low
+  
+  * [build] reenable syslog
+  * [scheduler] consider state of virtual nodes
+  * [server] fix infite loop
+
+ -- Simon Toth <toth@fi.muni.cz>  Mon, 23 May 2011 13:15:00 +0100 
+
+torque-meta (2.4.27+DEBIAN_VERSION) unstable; urgency=low
+
+  * [clients] fix qstat and pbsnodes (should check both /usr/bin and software for binaries)
+
+ -- Simon Toth <toth@fi.muni.cz>  Thu, 12 May 2011 14:00:00 +0100
+
+torque-meta (2.4.26+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] further fixes in prologues and epilogues
+
+ -- Simon Toth <toth@fi.muni.cz>  Fri, 29 Apr 2011 11:50:00 +0100 
+
+torque-meta (2.4.25+DEBIAN_VERSION) unstable; urgency=low
+
+  * [scheduler] added running-priority state
+  * [mom] new prologue and epilogue scripts with /usr/bin/qstat.bin support and fixed preemptible detection
+  * [mom] removed loging 
+
+ -- Simon Toth <toth@fi.muni.cz>  Thu, 28 Apr 2011 15:50:00 +0100
+
+torque-meta (2.4.22+DEBIAN_VERSION) unstable; urgency=low
+
+  * [mom] fix problem with non-terminated environment
+  * [scheduler] fix problem with crashes occuring on long job comments
+  * [scheduler] fix problem with wrong interpretation of errors into comments
+  * [scheduler] new dynamic resources support
+  * [scheduler] new magrathea decoding function, updated with current states
+  * [scheduler] new node marking support (unsuitable to run, unsuitable to boot)
+  * [server] dynamic resources definitions added
+  * [lib,clients] fix problem with used connections not being marked as used, causing problems in clients
+  * [build] installation support for pbs_cache
+
+ -- Simon Toth <toth@fi.muni.cz>  Wed, 27 Apr 2011 10:20:00 +0100
+
+torque-meta (2.4.20+DEBIAN_VERSION) unstable; urgency=low
+
+  * [build] fix issues with debian 6 build
+
+ -- Simon Toth <toth@fi.muni.cz>  Tue, 7 Apr 2011 14:50:00 +0100
+
+torque-meta (2.4.19+DEBIAN_VERSION) unstable; urgency=low
+
+  * [system] fix provides in init.d scripts
+  * [system] fix server init.d script
+  * [build] synchronized version numbers
+  * [server] fix problem with revived jobs upon stage in failure
+  * [server] fix problem with cloud jobs requesting stage out of nonexistent files
+
+ -- Simon Toth <toth@fi.muni.cz>  Tue, 22 Mar 2011 14:40:00 +0100
+
+torque-meta (6.24.18+dfsg-1) unstable; urgency=low
+
+  * [build] support for Debian 6 (--with-gssapi_lib --with-gssapi_bin --with-gssapi_inc)
+  * [scheduler] fix integration problems with new nodespec library
+  * [mom] fix problem with stray process after mom restart
+  * [mom] fix problem with kerberos ticket not removed for interactive jobs 
+
+ -- Simon Toth <toth@fi.muni.cz>  Wed, 16 Mar 2011 23:50:00 +0100   
+
+torque-meta (1.0.17+dfsg-1) unstable; urgency=low
+
+  * [mom] fix problem with missing kerberos ticket for stagein
+  * [cmd] new command wrappers (qfree, qstat, pbsnodes) pbsnodes and qstat renamed to .bin
+
+ -- Simon Toth <toth@fi.muni.cz>  Fri, 4 Mar 2011 15:00:00 +0100
+
+torque-meta (1.0.16+dfsg-1) unstable; urgency=low
+
+  * [mom] fix pug issue (pug kept on node from start)
+  * [server] fix problem with #excl being kept in nodespes even after parsed
+  * [server] fix crash when -l nodes not present
+  * [server] fix problem with missing exclusivity being interpreted as shared cpu request
+
+ -- Simon Toth <toth@fi.muni.cz>  Fri, 25 Feb 2011 12:30:00 +0100
+
+torque-meta (1.0.15+dfsg-1) unstable; urgency=low
+
+  * [server,scheduler] resources_total renamed to resc_req_total
+  * [server] print job variables for all users (not just owners)
+
+ -- Simon Toth <toth@fi.muni.cz>  Thu, 17 Feb 2011 13:45:00 +0100 
+
+torque-meta (1.0.14+dfsg-1) unstable; urgency=low
+
+  * [build] fix init.d scripts creation no more torque-meta scripts
+  * [build] fixed pbs environment
+  * [server] fix several memory leaks
+  * [lib,server] resource patch polished (several corner cases fixed)
+  * [scheduler] resource patch propagated into scheduler
+  * [server,scheduler] support for negative properties requests added (^prop)
+  * [server] support for host=hostname syntax in nodespec
+
+ -- Simon Toth <toth@fi.muni.cz>  Wed, 9 Feb 2011 15:30:00 +0100
+
+torque-meta (1.0.13+dfsg-1) unstable; urgency=low
+
+  * [build] turn off syslog support
+  * [server] fix huge memory leaks
+  * [server] fix problem caused by merging with resource patch
+  * [server] fix memory access problems in expanded nodespec
+  * [mom] remove pid file even if no pid is present
+
+ -- Simon Toth <toth@fi.muni.cz>  Tue, 25 Jan 2011 19:35:00 +0100
+
+
+torque-meta (1.0.12+dfsg-1) unstable; urgency=low
+
+  * [lib,server] full resource semantics included, server now checks resources in nodespec requests
+  * [lib,server] new resources_total attribute on jobs
+  * [lib,server] mem, vmem are now per-node resources, pmem, pvmem are now per-proc resources
+  * [scheduler] fix problem with down/offline nodes scheduling
+  * [scheduler] fix problem with incorrect starving jobs scheduling
+  * [scheduler] fix problem with coliding implementations of starving jobs (original vs. our)
+  * [scheduler] remove all unnecesary output into sched_priv/sched_out file
+  * [scheduler] limit the maximum amount of considered starving jobs (hard coded)
+
+ -- Simon Toth <toth@fi.muni.cz>  Thu, 20 Jan 2011 14:23:45 +0100 
+
+
+torque-meta (1.0.9+dfsg-1) unstable; urgency=low
+
+  * [lib] fix buffer resizing problem in tcp/kerberos code
+  * [lib] disconnect no longer waits for EOF
+  * [server] fix total node counting
+
+ -- Simon Toth <toth@fi.muni.cz>  Wed, 12 Jan 2011 17:00:00 +0100
+
+
+torque-meta (1.0.8+dfsg-1) unstable; urgency=low
+
+  * [build] fix problems with installing into nonexisting directories
+  * [build] debug symbols re-added
+
+ -- Simon Toth <toth@fi.muni.cz>  Tue, 11 Jan 2011 13:41:00 +0100
+
+
+torque-meta (1.0.7+dfsg-1) unstable; urgency=low
+
+  * [build] fixed problems in compilation without kerberos
+  * [build] when replacing files, erase the previous ones first
+  * [scheduler] only schedule nodes that are down when a -lcluster=create is requested
+  * [scheduler] queue=... property on nodes now has higher priority then required_property=...
+  * [server] new job filter feature
+  * [server] translate all ncpus requests into ppn
+ 
+ -- Simon Toth <toth@fi.muni.cz>  Mon, 10 Jan 2011 12:12:00 +0100
+
+
+torque-meta (1.0.6+dfsg-1) unstable; urgency=low
+
+  * [server] fix problem with setting node type as virtual or cloud
+
+ -- Simon Toth <toth@fi.muni.cz>  Mon, 3 Jan 2011 14:29:40 +0100
+
+
+torque-meta (1.0.5+dfsg-1) unstable; urgency=low
+
+  * [build] install symlinks to /etc/init.d/pbs_mom|server|sched
+  * [mom] prologue/epilogue fixed paths for pbs_iff
+
+ -- Simon Toth <toth@fi.muni.cz>  Tue, 28 Dec 2010 18:05:40 +0100
+ 
+
+torque-meta (1.0.4+dfsg-1) unstable; urgency=low
+
+  * [mom] setup path in prologues
+  * [build] binaries are no longer stripped
+
+ -- Simon Toth <toth@fi.muni.cz>  Tue, 21 Dec 2010 20:23:00 +0100
+
+
+torque-meta (1.0.3+dfsg-1) unstable; urgency=low
+
+  * [server] fix install of vpn scripts
+  * [mom] fix install of prologue and epilogue scripts
+
+ -- Simon Toth <toth@fi.muni.cz>  Tue, 21 Dec 2010 13:00:40 +0100  
+
+
+torque-meta (1.0.2+dfsg-1) unstable; urgency=low
+
+  * [scheduler|server] reverted back to np and ppn logic
+  * [server] new exclusivity node flag
+  * [scheduler] schedulers logic modified to correctly work with new server node flag
+  * [build] fixed problem with make clean erasing scripts
+  * [mom] added prologue and epilogue scripts into installation
+  * [build] use -ggdb3 instead of -g for debug information generation
+
+ -- Simon Toth <toth@fi.muni.cz>  Wed, 15 Dec 2010 15:19:53 +0100 
+
+
+torqu-meta (1.0.1+dfsg-1) unstable; urgency=low
+
+  * Fixes in schedulers logic, required_property now works correctly
+  * Additional logging in scheduler
+  * User accounts now ignored for submits inside virtual clusters
+
+ -- Simon Toth <toth@fi.muni.cz>  Thu, 09 Dec 2010 15:10:17 +0100 
+
+
+torque-meta (1.0.0+dfsg-1) unstable; urgency=low
+ 
+  * Initial Metacentrum Torque packaged release
+
+ -- Simon Toth <toth@fi.muni.cz>  Tue, 07 Dec 2010 17:03:22 +0100 

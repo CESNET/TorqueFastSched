@@ -1,0 +1,12 @@
+[Unit]
+Description=MetaCentrum Torque Scheduler
+#Requires=local-fs.target named.target network.target pbs_server.target
+After=local-fs.target named.target network.target pbs_server.service
+
+[Service]
+Type=forking
+ExecStart=/usr/sbin/torque_fast_sched
+PIDFile=/var/spool/torque/sched_priv/sched.lock
+
+[Install]
+WantedBy=multi-user.target
