@@ -1,10 +1,15 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.0)
 project(torque-fast-sched VERSION 1.0.0)
 
 find_file(HAVE_PBS_CACHE_API_H pbs_cache_api.h /usr/include)
 if(NOT HAVE_PBS_CACHE_API_H)
 	message(FATAL_ERROR "Can't find pbs cache header file: pbs_cache_api.h")
 endif()
+
+set(BOOST_USE_STATIC_LIBS OFF)
+set(BOOST_USE_STATIC_RUNTIME OFF)
+find_package(Boost REQUIRED)
+#include_directories( ${Boost_INCLUDE_DIRS} )
 
 include_directories(legacy)
 include_directories(.)
@@ -23,7 +28,7 @@ TARGET_LINK_LIBRARIES(torque-fast-sched torque pbscache)
 
 install(TARGETS torque-fast-sched DESTINATION sbin)
 install(DIRECTORY dist/sched_priv DESTINATION /var/spool/torque)
-install(DIRECTORY dist/sched_log DESTINATION /var/spool/torque)
+install(DIRECTORY DESTINATION /var/spool/torque/sched_logs)
 
 
 if (IS_DIRECTORY /usr/lib/systemd/system)
