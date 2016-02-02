@@ -14,8 +14,8 @@
 ### END INIT INFO
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
-DAEMON=/usr/sbin/torque_fast_sched
-NAME=torque_fast_sched
+DAEMON=/usr/sbin/torque-fast-sched
+NAME=torque-fast-sched
 DESC="Torque scheduler"
 PIDFILE=/var/spool/torque/sched_priv/sched.lock
 
