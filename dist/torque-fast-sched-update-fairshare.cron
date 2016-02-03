@@ -1,0 +1,25 @@
+#!/bin/bash
+
+#SCHEDNAME=pbs_sched
+SCHEDNAME=torque-fast-sched
+
+# Determine last modification of fairshare configuration files
+GEN=$(stat -c %Y /var/spool/torque/sched_priv/resource_group);
+CONF=$(stat -c %Y /var/spool/torque/sched_priv/resource_group.default);
+
+
+if [[ $GEN -gt $CONF ]]; then
+	systemctl stop $SCHEDNAME
+	PID=$(pidof $SCHEDNAME);
+
+	if [[ "x$PID" != "x" ]]; then
+		echo "Could not stop scheduler for configuration switch.";
+		exit 1;
+	fi
+
+	cp /var/spool/torque/sched_priv/resource_group.default /var/spool/torque/sched_priv/resource_group.backup
+	cp /var/spool/torque/sched_priv/resource_group /var/spool/torque/sched_priv/resource_group.default
+
+	systemctl start $SCHEDNAME	
+fi
+

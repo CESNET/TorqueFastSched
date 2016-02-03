@@ -39,6 +39,7 @@ endif()
 
 if (IS_DIRECTORY /etc/cron.daily)
 	install(FILES dist/torque-fast-sched.cron DESTINATION /etc/cron.daily)
+	install(FILES dist/torque-fast-sched-update-fairshare.cron DESTINATION /etc/cron.daily)
 else()
 	message(FATAL_ERROR "Can't find cron daily directory.")
 endif()
