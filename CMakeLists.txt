@@ -31,7 +31,7 @@ install(DIRECTORY dist/sched_priv DESTINATION /var/spool/torque)
 install(DIRECTORY DESTINATION /var/spool/torque/sched_logs)
 
 
-if (IS_DIRECTORY /usr/lib/systemd/system)
+if (IS_DIRECTORY /usr/lib/systemd)
 	install(FILES dist/torque-fast-sched.service DESTINATION /usr/lib/systemd/system)
 else()
 	install(FILES dist/torque-fast-sched DESTINATION /etc/init.d)
