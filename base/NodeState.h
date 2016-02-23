@@ -8,7 +8,7 @@
 #include <set>
 
 namespace Scheduler {
-namespace Base {
+namespace Core {
 
 /// Node state constants
 enum NodeStateRaw {

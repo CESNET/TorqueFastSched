@@ -2,7 +2,7 @@
 #include <cstdlib>
 
 namespace Scheduler {
-namespace Base {
+namespace Core {
 
 DynamicResource::DynamicResource()
   : p_avail(-1), p_assigned(0), p_reported_use(-1), p_scheduled_use(0), p_name("")

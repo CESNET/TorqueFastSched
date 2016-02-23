@@ -5,7 +5,7 @@
 #include <string>
 
 namespace Scheduler {
-namespace Base {
+namespace Core {
 
 /** \brief Dynamic resource helper class */
 class DynamicResource

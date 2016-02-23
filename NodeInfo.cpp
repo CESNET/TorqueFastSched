@@ -105,7 +105,7 @@ unsigned long long node_info::get_mem_total() const
   return mem->get_capacity();
 }
 
-CheckResult node_info::has_props_boot(const job_info *job, const pars_spec_node *spec, const repository_alternatives *virt_conf) const
+CheckResult node_info::has_props_boot(const JobInfo *job, const pars_spec_node *spec, const repository_alternatives *virt_conf) const
   {
   CheckResult result = CheckAvailable;
   pars_prop *prop = spec->properties;
@@ -127,7 +127,7 @@ CheckResult node_info::has_props_boot(const job_info *job, const pars_spec_node 
   return result;
   }
 
-CheckResult node_info::has_props_run(const job_info *job, const pars_spec_node *spec) const
+CheckResult node_info::has_props_run(const JobInfo *job, const pars_spec_node *spec) const
   {
   CheckResult result = CheckAvailable;
   pars_prop *prop = spec->properties;
@@ -146,7 +146,7 @@ CheckResult node_info::has_props_run(const job_info *job, const pars_spec_node *
   return result;
   }
 
-CheckResult node_info::has_spec(const job_info *job, const pars_spec_node *spec, ScratchType *scratch) const
+CheckResult node_info::has_spec(const JobInfo *job, const pars_spec_node *spec, ScratchType *scratch) const
   {
   CheckResult proc_result = has_proc(job,spec);
   CheckResult mem_result  = has_mem(job,spec);
@@ -300,12 +300,12 @@ CheckResult node_info::has_runnable_state() const
   }
 
 
-CheckResult node_info::can_boot_job(const job_info *jinfo) const
+CheckResult node_info::can_boot_job(const JobInfo *jinfo) const
   {
   if (this->is_notusable())
     return CheckNonFit;
 
-  if (jinfo->placement != NULL && this->get_resource(jinfo->placement) == NULL)
+  if (jinfo->placement.size() != 0 && this->get_resource(jinfo->placement.c_str()) == NULL)
     return CheckNonFit;
 
   CheckResult result = has_bootable_state(jinfo->cluster_mode);
@@ -320,11 +320,11 @@ CheckResult node_info::can_boot_job(const job_info *jinfo) const
   if (jinfo->cluster_mode == ClusterUse)
     return CheckNonFit;
 
-  if (this->get_nomultinode() && jinfo->is_multinode)
+  if (this->get_nomultinode() && jinfo->is_multinode())
     return CheckNonFit;
 
   // User does not have an account on this machine - can never run
-  if (site_user_has_account(jinfo->account,const_cast<char*>(this->get_name()),const_cast<char*>(this->get_phys_cluster().c_str())) == CHECK_NO) // TODO const fix
+  if (site_user_has_account(const_cast<char*>(jinfo->account.c_str()),const_cast<char*>(this->get_name()),const_cast<char*>(this->get_phys_cluster().c_str())) == CHECK_NO) // TODO const fix
     return CheckNonFit;
 
   // Server already installing to many machines
@@ -338,12 +338,12 @@ CheckResult node_info::can_boot_job(const job_info *jinfo) const
   return result;
   }
 
-CheckResult node_info::can_run_job(const job_info *jinfo) const
+CheckResult node_info::can_run_job(const JobInfo *jinfo) const
   {
   if (this->is_notusable())
     return CheckNonFit;
 
-  if (jinfo->placement != NULL && this->get_resource(jinfo->placement) == NULL)
+  if (jinfo->placement.size() != 0 && this->get_resource(jinfo->placement.c_str()) == NULL)
     return CheckNonFit;
 
   CheckResult result = has_runnable_state();
@@ -362,14 +362,14 @@ CheckResult node_info::can_run_job(const job_info *jinfo) const
   if (this->get_type() == NodeCluster && jinfo->cluster_mode != ClusterNone)
     return CheckNonFit;
 
-  if (this->get_nomultinode() && jinfo->is_multinode)
+  if (this->get_nomultinode() && jinfo->is_multinode())
     return CheckNonFit;
 
   Resource *res_machine = this->get_resource("machine_cluster");
   if (jinfo->cluster_mode != ClusterUse) /* users can always go inside a cluster */
     {
     // User does not have an account on this machine - can never run
-    if (site_user_has_account(jinfo->account,const_cast<char*>(this->get_name()),const_cast<char*>(this->get_phys_cluster().c_str())) == CHECK_NO) // TODO const char fix
+    if (site_user_has_account(const_cast<char*>(jinfo->account.c_str()),const_cast<char*>(this->get_name()),const_cast<char*>(this->get_phys_cluster().c_str())) == CHECK_NO) // TODO const char fix
       return CheckNonFit;
 
     // Machine is already allocated to a virtual cluster, only ClusterUse type of jobs allowed
@@ -378,7 +378,7 @@ CheckResult node_info::can_run_job(const job_info *jinfo) const
     }
   else
     {
-    if (jinfo->cluster_name == NULL)
+    if (jinfo->cluster_name.size() != 0)
       return CheckNonFit;
 
     // Check whether this machine is running the cluster user is requesting
@@ -391,7 +391,7 @@ CheckResult node_info::can_run_job(const job_info *jinfo) const
   return result;
   }
 
-CheckResult node_info::can_fit_job_for_run(const job_info *jinfo, const pars_spec_node *spec, ScratchType *scratch) const
+CheckResult node_info::can_fit_job_for_run(const JobInfo *jinfo, const pars_spec_node *spec, ScratchType *scratch) const
   {
   CheckResult result;
   CheckResult node_test;
@@ -414,7 +414,7 @@ CheckResult node_info::can_fit_job_for_run(const job_info *jinfo, const pars_spe
   return result;
   }
 
-CheckResult node_info::can_fit_job_for_boot(const job_info *jinfo, const pars_spec_node *spec, ScratchType *scratch, repository_alternatives **alternative) const
+CheckResult node_info::can_fit_job_for_boot(const JobInfo *jinfo, const pars_spec_node *spec, ScratchType *scratch, repository_alternatives **alternative) const
   {
   CheckResult result;
   CheckResult node_test;
@@ -631,7 +631,7 @@ void node_info::process_machine_cluster()
   }
 
 
-bool compare_job_ends(job_info *left, job_info *right)
+bool compare_job_ends(JobInfo *left, JobInfo *right)
   {
   return left->completion_time() < right->completion_time();
   }
@@ -643,7 +643,7 @@ void node_info::expand_virtual_nodes()
   // cannot expand already virtual nodes
   assert(!this->is_virtual_node());
 
-  set<job_info *,bool(*)(job_info*,job_info*)> running_jobs(compare_job_ends);
+  set<JobInfo *,bool(*)(JobInfo*,JobInfo*)> running_jobs(compare_job_ends);
 
   set<string> running_jobs_names;
   set<string>::const_iterator i;
@@ -659,7 +659,7 @@ void node_info::expand_virtual_nodes()
     // go through all the running jobs, find the corresponding one
     for (int j = 0; this->get_parent_server()->running_jobs[j] != NULL; j++)
       {
-      if (*i == this->get_parent_server()->running_jobs[j]->name)
+      if (*i == this->get_parent_server()->running_jobs[j]->job_id)
         {
         running_jobs.insert(this->get_parent_server()->running_jobs[j]);
         break;
@@ -669,7 +669,7 @@ void node_info::expand_virtual_nodes()
 
   node_info *source_node = this;
 
-  set<job_info*,bool(*)(job_info*,job_info*)>::const_iterator j;
+  set<JobInfo*,bool(*)(JobInfo*,JobInfo*)>::const_iterator j;
   for (j = running_jobs.begin(); j != running_jobs.end(); j++)
     { // for each job (in the order of completion, unplan from node, creating a new virtual one)
 
@@ -690,9 +690,9 @@ void node_info::expand_virtual_nodes()
       slave->p_avail_after = (*j)->completion_time();
       // record jobs that need to finish for this node state to exist
       if (source_node->p_waiting_on_jobs == "")
-        slave->p_waiting_on_jobs = string((*j)->name);
+        slave->p_waiting_on_jobs = (*j)->job_id;
       else
-        slave->p_waiting_on_jobs += string(", ") + string((*j)->name);
+        slave->p_waiting_on_jobs += string(", ") + (*j)->job_id;
 
       source_node = slave.get();
       }

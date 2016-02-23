@@ -137,7 +137,7 @@ int is_node_non_dedicated(node_info *node, void *arg);
 /*
  *      find_best_node - find the best node to run a job in a node array
  */
-node_info *find_best_node(job_info *jinfo, node_info **ninfo_arr);
+node_info *find_best_node(JobInfo *jinfo, node_info **ninfo_arr);
 
 /*
  *      find_node_info - find a node in the node array
@@ -150,7 +150,7 @@ node_info *find_node_info(char *nodename, node_info **ninfo_arr);
  */
 void print_node(node_info *ninfo, int brief);
 
-char* nodes_preassign_string(job_info *jinfo, node_info **ninfo_arr, int count, int &booting, double &minspec);
+char* nodes_preassign_string(JobInfo *jinfo, node_info **ninfo_arr, int count, int &booting, double &minspec);
 void nodes_preassign_clean(node_info **ninfo_arr, int count);
 void nodes_preassign_clean(const std::vector<node_info*>& nodes);
 int nodes_preassign(const char *matching_spec, node_info **ninfo_arr, int count, int needcount);

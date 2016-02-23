@@ -122,7 +122,7 @@ void free_server(server_info *sinfo, int free_queues_too);
  * @ninfo Node info
  * @jinfo Job info
  */
-void update_node_on_run(node_info *ninfo, job_info *jinfo);
+void update_node_on_run(node_info *ninfo, JobInfo *jinfo);
 
 /** Update server on job move
  *
@@ -133,12 +133,12 @@ void update_node_on_run(node_info *ninfo, job_info *jinfo);
  * @param qinfo Destination queue
  * @param jinfo Job that is moved
  */
-void update_server_on_move(server_info *sinfo, job_info *jinfo);
+void update_server_on_move(server_info *sinfo, JobInfo *jinfo);
 
 /*
  *      update_server_on_run - update server_info strucutre when a job is run
  */
-void update_server_on_run(server_info *sinfo, job_info *jinfo);
+void update_server_on_run(server_info *sinfo, JobInfo *jinfo);
 
 /*
  *      set_jobs - set the server_info jobs array from the queue job arrays
@@ -149,7 +149,7 @@ void set_jobs(server_info *sinfo);
  *      check_run_job - function used by job_filter to filter out
  *                      non-running jobs.
  */
-int check_run_job(job_info *job, void *arg);
+int check_run_job(JobInfo *job, void *arg);
 
 /*
  *      free_token_list - free a list of tokens

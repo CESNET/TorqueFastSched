@@ -99,7 +99,7 @@ extern "C" {
 #include "RescInfoDb.h"
 #include "base/MiscHelpers.h"
 using namespace Scheduler;
-using namespace Base;
+using namespace Core;
 
 #include <new>
 using namespace std;
@@ -174,7 +174,7 @@ server_info *query_server(int pbs_sd)
     qinfo++;
     }
 
-  if ((sinfo -> jobs = (job_info **) malloc(sizeof(job_info *) * (sinfo -> sc.total + 1))) == NULL)
+  if ((sinfo -> jobs = (JobInfo **) malloc(sizeof(JobInfo *) * (sinfo -> sc.total + 1))) == NULL)
     {
     free_server(sinfo, 1);
     perror("Memory allocation error");
@@ -428,7 +428,7 @@ void free_server(server_info *sinfo, int free_objs_too)
  * @param qinfo Destination queue
  * @param jinfo Job that is moved
  */
-void update_server_on_move(server_info *sinfo, job_info *jinfo)
+void update_server_on_move(server_info *sinfo, JobInfo *jinfo)
   {
   sinfo -> sc.running++;
   jinfo -> queue -> server -> sc.queued--;
@@ -449,7 +449,7 @@ void update_server_on_move(server_info *sinfo, job_info *jinfo)
  * returns nothing
  *
  */
-void update_server_on_run(server_info *sinfo, job_info *jinfo)
+void update_server_on_run(server_info *sinfo, JobInfo *jinfo)
   {
   sinfo -> sc.running++;
   sinfo -> sc.queued--;
@@ -473,7 +473,7 @@ void update_server_on_run(server_info *sinfo, job_info *jinfo)
 void set_jobs(server_info *sinfo)
   {
   queue_info **qinfo;  /* used to cycle through the array of queues */
-  job_info **jinfo;  /* used in copying jobs to server array */
+  JobInfo **jinfo;  /* used in copying jobs to server array */
   int i = 0, j;
 
   qinfo = sinfo -> queues;
@@ -505,7 +505,7 @@ void set_jobs(server_info *sinfo)
  *      returns 1 if the job is running
  *
  */
-int check_run_job(job_info *job, void * UNUSED(arg))
+int check_run_job(JobInfo *job, void * UNUSED(arg))
   {
   return job -> state == JobRunning;
   }

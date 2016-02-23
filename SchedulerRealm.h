@@ -6,7 +6,7 @@
 #include <map>
 
 #include "data_types.h"
-#include "base/ConnectionMgr.h"
+#include "SchedulerCore_ConnectionMgr.h"
 
 class World
   {
@@ -25,9 +25,9 @@ class World
     void update_fairshare();
     void init_scheduling_cycle();
     void update_last_running();
-    int try_run_job(job_info *jinfo);
+    int try_run_job(JobInfo *jinfo);
 
-    Scheduler::Base::ConnectionMgr p_connections;
+    Scheduler::Core::ConnectionMgr p_connections;
 
     server_info *p_info;
     std::vector<prev_job_info> p_last_running;

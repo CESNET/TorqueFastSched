@@ -204,9 +204,9 @@ update_cycle_status(void)
     init_non_prime_time();
   }
 
-int job_is_movable(job_info* job)
+int job_is_movable(JobInfo* job)
   {
-  if (job->can_not_run || (!job->queue->is_global) || (job->state != JobQueued))
+  if (!job->suitable_for_run() || (!job->queue->is_global) || (job->state != JobQueued))
     return 0;
   else
     return 1;
@@ -224,12 +224,12 @@ int job_is_movable(job_info* job)
  *     - NULL on error or if there are no more jobs to run
  *
  */
-job_info *next_job(server_info *sinfo, int init)
+JobInfo *next_job(server_info *sinfo, int init)
   {
   /* cjobs is an array of the queue's job_info arrays.  It is used to cycle
    * through the jobs returning 1 job from each queue
    */
-  static job_info ***cjobs = NULL;
+  static JobInfo ***cjobs = NULL;
 
   /* last_queue is the index into a queue array of the last time
    * the function was called
@@ -241,7 +241,7 @@ job_info *next_job(server_info *sinfo, int init)
    */
   static int last_job;
 
-  job_info *rjob = NULL;  /* the job to return */
+  JobInfo *rjob = NULL;  /* the job to return */
   int i;
 
   if (cstat.round_robin)
@@ -260,7 +260,7 @@ job_info *next_job(server_info *sinfo, int init)
        */
       if (cjobs == NULL)
         {
-        if ((cjobs = (job_info ***) malloc(sizeof(job_info**) * sinfo -> num_queues)) == NULL)
+        if ((cjobs = (JobInfo ***) malloc(sizeof(JobInfo**) * sinfo -> num_queues)) == NULL)
           {
           perror("Memory Allocation Error");
           return NULL;
@@ -296,7 +296,7 @@ job_info *next_job(server_info *sinfo, int init)
             {
             if (cstat.fair_share)
               rjob = extract_fairshare(cjobs[last_queue]);
-            else if (cjobs[last_queue][last_job] -> can_not_run == 0)
+            else if (cjobs[last_queue][last_job] -> suitable_for_run())
               rjob = cjobs[last_queue][last_job];
             }
           }

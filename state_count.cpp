@@ -134,7 +134,7 @@ void init_state_count(state_count *sc)
   }
 
 
-void count_states(const vector<job_info*>& jobs, state_count *sc)
+void count_states(const vector<JobInfo*>& jobs, state_count *sc)
   {
   count_states(jobs.data(),sc);
   }
@@ -148,7 +148,7 @@ void count_states(const vector<job_info*>& jobs, state_count *sc)
  * returns nothing
  *
  */
-void count_states(job_info * const *jobs, state_count *sc)
+void count_states(JobInfo * const *jobs, state_count *sc)
   {
   int i;
 
@@ -168,7 +168,7 @@ void count_states(job_info * const *jobs, state_count *sc)
         case JobCompleted:  sc->completed++;  break;
         case JobCrossRun:   sc->crossrun++;   break;
         default:
-          sched_log(PBSEVENT_JOB, PBS_EVENTCLASS_JOB, jobs[i] -> name, "Job in unknown state");
+          sched_log(PBSEVENT_JOB, PBS_EVENTCLASS_JOB, jobs[i] -> job_id.c_str(), "Job in unknown state");
         }
       }
     }

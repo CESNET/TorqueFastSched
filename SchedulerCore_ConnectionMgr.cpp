@@ -1,4 +1,25 @@
-#include "ConnectionMgr.h"
+/*
+The MIT License (MIT)
+Copyright (c) 2016 Simon Toth (simon@cesnet.cz), CESNET a.l.e.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+#include "SchedulerCore_ConnectionMgr.h"
 #include "utility.h"
 
 /* Helper functions */
@@ -13,13 +34,62 @@
 using namespace std;
 
 extern "C"{
-#include "libpbs.h"
-#include "net_connect.h"
-#include "server_limits.h"
+#include "legacy/server_limits.h"
+#include "legacy/libpbs.h"
+
+extern struct connect_handle connection[];
+pbs_net_t get_hostaddr(char *);
+int  client_to_svr(pbs_net_t, unsigned int, int, char *);
 }
 
+namespace {
+
+/* sock refers to an opened socket */
+int socket_to_conn(int sock) noexcept
+  {
+  int     i;
+
+  for (i = 0; i < PBS_NET_MAX_CONNECTIONS; i++)
+    {
+    if (connection[i].ch_inuse == 0)
+      {
+      connection[i].ch_inuse = 1;
+      connection[i].ch_errno = 0;
+      connection[i].ch_socket = sock;
+      connection[i].ch_errtxt = NULL;
+      return (i);
+      }
+    }
+
+  pbs_errno = PBSE_NOCONNECTS;
+
+  return (-1);
+  }
+
+int privileged_connect(const char* server) noexcept
+  {
+  pbs_net_t hostaddr;
+  if ((hostaddr = get_hostaddr((char*)server)) == (pbs_net_t)0)
+    {
+    return -1;
+    }
+
+  unsigned int port = 15051;
+  int sock = client_to_svr(hostaddr, port, 1, NULL);
+
+  if (sock < 0)
+    {
+    return(-1);
+    }
+
+  return socket_to_conn(sock);
+  }
+
+}
+
+
 namespace Scheduler {
-namespace Base {
+namespace Core {
 
 /** \brief Verify that the given string represents a valid FQDN
  *
@@ -99,49 +169,6 @@ std::string get_local_fqdn()
   return get_fqdn(string(hostname));
   }
 
-
-/* sock refers to an opened socket */
-int socket_to_conn(int sock)
-  {
-  int     i;
-
-  for (i = 0; i < PBS_NET_MAX_CONNECTIONS; i++)
-    {
-    if (connection[i].ch_inuse == 0)
-      {
-      connection[i].ch_inuse = 1;
-      connection[i].ch_errno = 0;
-      connection[i].ch_socket = sock;
-      connection[i].ch_errtxt = NULL;
-      return (i);
-      }
-    }
-
-  pbs_errno = PBSE_NOCONNECTS;
-
-  return (-1);
-  }
-
-
-int privileged_connect(const char* server)
-  {
-  pbs_net_t hostaddr;
-  if ((hostaddr = get_hostaddr((char*)server)) == (pbs_net_t)0)
-    {
-    return -1;
-    }
-
-  unsigned int port = 15051;
-  int sock = client_to_svr(hostaddr, port, 1, NULL);
-
-  if (sock < 0)
-    {
-    return(-1);
-    }
-
-  return socket_to_conn(sock);
-  }
-
 int ConnectionMgr::make_master_connection(const string& hostname)
   {
   /* pass-through errors */
@@ -192,7 +219,7 @@ void ConnectionMgr::disconnect(const string& hostname)
     }
   }
 
-void ConnectionMgr::disconnect_all()
+void ConnectionMgr::disconnect_all() noexcept
   {
   map<string,int>::iterator i;
   for (i = p_connections.begin(); i != p_connections.end(); ++i)
@@ -214,6 +241,16 @@ int ConnectionMgr::get_connection(const string& hostname) const
     throw runtime_error(string("Unexpected hostname (\"") + hostname + string("\") in ConnectionMgr::get_connection()."));
 
   return i->second;
+  }
+
+void ConnectionMgr::reset_connection(const std::string& hostname)
+  {
+  map<string,int>::iterator i = p_connections.find(hostname);
+  if (i == p_connections.end())
+    return; // no need to reset
+
+  pbs_disconnect(i->second);
+  p_connections.erase(i);
   }
 
 }}

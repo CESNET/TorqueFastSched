@@ -4,7 +4,7 @@ using namespace std;
 namespace Scheduler {
 namespace Logic {
 
-NodeSuitableForJob::NodeSuitableForJob(const job_info *jinfo) : p_jinfo(jinfo) {}
+NodeSuitableForJob::NodeSuitableForJob(const JobInfo *jinfo) : p_jinfo(jinfo) {}
 
 bool NodeSuitableForJob::operator ()(const node_info* node) const
   {
@@ -17,7 +17,7 @@ bool NodeSuitableForJob::operator ()(const node_info* node) const
   return true;
   }
 
-NodeSuitableForSpec::NodeSuitableForSpec(const job_info *jinfo, const pars_spec_node *spec, SuitableNodeFilterMode mode) : p_jinfo(jinfo), p_spec(spec), p_mode(mode) {}
+NodeSuitableForSpec::NodeSuitableForSpec(const JobInfo *jinfo, const pars_spec_node *spec, SuitableNodeFilterMode mode) : p_jinfo(jinfo), p_spec(spec), p_mode(mode) {}
 
 bool NodeSuitableForSpec::operator()(const node_info* node) const
   {
@@ -56,7 +56,7 @@ void filter_nodes(const vector<node_info*>& nodes, vector<node_info*>& output, c
   }
 }
 
-void NodeSuitableForSpec::filter_fairshare(const vector<node_info*>& nodes, vector<node_info*>& result, const job_info* jinfo, const pars_spec_node* spec)
+void NodeSuitableForSpec::filter_fairshare(const vector<node_info*>& nodes, vector<node_info*>& result, const JobInfo* jinfo, const pars_spec_node* spec)
   {
   /*
   back_insert_iterator<vector<node_info*>> it(result);
@@ -76,22 +76,22 @@ void NodeSuitableForSpec::filter_fairshare(const vector<node_info*>& nodes, vect
   filter_nodes(nodes,result,NodeSuitableForSpec(jinfo,spec,SuitableFairshareMode));
   }
 
-void NodeSuitableForSpec::filter_starving(const vector<node_info*>& nodes, vector<node_info*>& result, const job_info* jinfo, const pars_spec_node* spec)
+void NodeSuitableForSpec::filter_starving(const vector<node_info*>& nodes, vector<node_info*>& result, const JobInfo* jinfo, const pars_spec_node* spec)
   {
   filter_nodes(nodes,result,NodeSuitableForSpec(jinfo,spec,SuitableStarvingMode));
   }
 
-void NodeSuitableForSpec::filter_assign(const vector<node_info*>& nodes, vector<node_info*>& result, const job_info* jinfo, const pars_spec_node* spec)
+void NodeSuitableForSpec::filter_assign(const vector<node_info*>& nodes, vector<node_info*>& result, const JobInfo* jinfo, const pars_spec_node* spec)
   {
   filter_nodes(nodes,result,NodeSuitableForSpec(jinfo,spec,SuitableAssignMode));
   }
 
-void NodeSuitableForSpec::filter_reboot(const vector<node_info*>& nodes, vector<node_info*>& result, const job_info* jinfo, const pars_spec_node* spec)
+void NodeSuitableForSpec::filter_reboot(const vector<node_info*>& nodes, vector<node_info*>& result, const JobInfo* jinfo, const pars_spec_node* spec)
   {
   filter_nodes(nodes,result,NodeSuitableForSpec(jinfo,spec,SuitableRebootMode));
   }
 
-void NodeSuitableForJob::filter(const vector<node_info*>& nodes, vector<node_info*>& result, const job_info* jinfo)
+void NodeSuitableForJob::filter(const vector<node_info*>& nodes, vector<node_info*>& result, const JobInfo* jinfo)
   {
   filter_nodes(nodes,result,NodeSuitableForJob(jinfo));
   }

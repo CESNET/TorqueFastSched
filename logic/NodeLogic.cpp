@@ -33,7 +33,7 @@ void NodeLogic::set_scratch_priority(size_t order, ScratchType scratch)
   p_scratch_priority[order]=scratch;
   }
 
-CheckResult NodeLogic::has_proc(const job_info *job, const pars_spec_node *spec) const
+CheckResult NodeLogic::has_proc(const JobInfo *job, const pars_spec_node *spec) const
   {
   // If job is comming from an admin queue, skip checking CPU cores
   if (job->queue->is_admin_queue)
@@ -61,7 +61,7 @@ CheckResult NodeLogic::has_proc(const job_info *job, const pars_spec_node *spec)
   if (this->get_cores_free() - this->p_core_assigned == 0)
     return CheckOccupied;
 
-  if (job->is_exclusive)
+  if (job->is_exclusive())
     {
     // Some processors are in use, job requires all
     if (this->get_cores_free() - this->p_core_assigned != this->get_cores_total())
@@ -77,7 +77,7 @@ CheckResult NodeLogic::has_proc(const job_info *job, const pars_spec_node *spec)
   return CheckAvailable;
   }
 
-CheckResult NodeLogic::has_mem(const job_info *job, const pars_spec_node *spec) const
+CheckResult NodeLogic::has_mem(const JobInfo *job, const pars_spec_node *spec) const
   {
   // No memory checks for admin jobs
   if (job->queue->is_admin_queue)
@@ -107,7 +107,7 @@ static CheckResult check_scratch_helper(const NodeLogic * const ninfo, const cha
   return res->check_numeric_fit(value);
   }
 
-CheckResult NodeLogic::has_scratch(const job_info *job, const pars_spec_node *spec, ScratchType *scratch) const
+CheckResult NodeLogic::has_scratch(const JobInfo *job, const pars_spec_node *spec, ScratchType *scratch) const
   {
   // admin jobs skip scratch check
   if (job->queue->is_admin_queue)

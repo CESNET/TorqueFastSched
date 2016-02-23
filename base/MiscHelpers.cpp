@@ -10,11 +10,11 @@
 #include "constant.h"
 
 using namespace Scheduler;
-using namespace Base;
+using namespace Core;
 using namespace std;
 
 namespace Scheduler {
-namespace Base {
+namespace Core {
 
 void comma_list_to_set(char *list, set<string>& s)
   {

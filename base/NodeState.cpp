@@ -10,7 +10,7 @@
 #include <cstring>
 
 namespace Scheduler {
-namespace Base {
+namespace Core {
 namespace Internals {
 
 NodeState::NodeState() : p_is_down(false), p_is_free(false), p_is_offline(false),

@@ -6,7 +6,7 @@
 using namespace std;
 
 namespace Scheduler {
-namespace Base {
+namespace Core {
 
 pair<size_t,size_t> PropRegistry::register_property(const char* property, const char* value)
   {

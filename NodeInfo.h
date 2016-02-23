@@ -13,7 +13,7 @@ enum ResourceCheckMode { MaxOnly, Avail };
 #include "logic/JobAssign.h"
 #include "logic/NodeLogic.h"
 using namespace Scheduler;
-using namespace Base;
+using namespace Core;
 using namespace Logic;
 #include "JobInfo.h"
 
@@ -63,20 +63,20 @@ struct node_info : public NodeLogic, public JobAssign // change to protected inh
    * Check whether there are enough processors to match the specified job/nodespec to this node.
    * Also handles admin slots and exclusive requests.
    */
-  CheckResult has_spec(const job_info *job, const pars_spec_node *spec, ScratchType *scratch) const;
-  CheckResult has_props_boot(const job_info *job, const pars_spec_node *spec, const repository_alternatives *virt_conf) const;
-  CheckResult has_props_run(const job_info *job, const pars_spec_node *spec) const;
+  CheckResult has_spec(const JobInfo *job, const pars_spec_node *spec, ScratchType *scratch) const;
+  CheckResult has_props_boot(const JobInfo *job, const pars_spec_node *spec, const repository_alternatives *virt_conf) const;
+  CheckResult has_props_run(const JobInfo *job, const pars_spec_node *spec) const;
 
   CheckResult has_bootable_state(enum ClusterMode mode) const;
   CheckResult has_runnable_state() const;
 
-  CheckResult can_fit_job(const job_info *jinfo) const;
-  CheckResult can_run_job(const job_info *jinfo) const;
-  CheckResult can_boot_job(const job_info *jinfo) const;
+  CheckResult can_fit_job(const JobInfo *jinfo) const;
+  CheckResult can_run_job(const JobInfo *jinfo) const;
+  CheckResult can_boot_job(const JobInfo *jinfo) const;
 
-  CheckResult can_fit_job(const job_info *jinfo, const pars_spec_node *spec, ScratchType *scratch, repository_alternatives **alternative) const;
-  CheckResult can_fit_job_for_run(const job_info *jinfo, const pars_spec_node *spec, ScratchType *scratch) const;
-  CheckResult can_fit_job_for_boot(const job_info *jinfo, const pars_spec_node *spec, ScratchType *scratch, repository_alternatives **alternative) const;
+  CheckResult can_fit_job(const JobInfo *jinfo, const pars_spec_node *spec, ScratchType *scratch, repository_alternatives **alternative) const;
+  CheckResult can_fit_job_for_run(const JobInfo *jinfo, const pars_spec_node *spec, ScratchType *scratch) const;
+  CheckResult can_fit_job_for_boot(const JobInfo *jinfo, const pars_spec_node *spec, ScratchType *scratch, repository_alternatives **alternative) const;
 
   unsigned long long get_mem_total() const;
 

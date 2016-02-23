@@ -16,7 +16,7 @@
 #include "ResourceSet.h"
 
 namespace Scheduler {
-namespace Base {
+namespace Core {
 
 enum node_type { NodeTimeshared, NodeCluster, NodeVirtual, NodeCloud };
 

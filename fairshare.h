@@ -103,7 +103,7 @@ int calc_fair_share_perc(group_info *root, int shares);
  *      update_usage_on_run - update a users usage information when a
  *                            job is run
  */
-void update_usage_on_run(job_info *jinfo);
+void update_usage_on_run(JobInfo *jinfo);
 
 /*
  *      calculate_usage_value - calcualte a value that represents the usage
@@ -122,7 +122,7 @@ void decay_fairshare_trees();
  *      extract_fairshare - extract the first job from the user with the
  *                          least percentage / usage ratio
  */
-job_info *extract_fairshare(job_info **jobs);
+JobInfo *extract_fairshare(JobInfo **jobs);
 
 /*
  *      write_usage - write the usage information to the usage file

@@ -288,7 +288,7 @@ unsigned string_array_verify(char **sa1, char **sa2)
  * returns time left on job or -1 on error
  *
  */
-int calc_time_left(job_info *jinfo)
+int calc_time_left(JobInfo *jinfo)
   {
   resource_req *req, *used;
   int used_amount;
@@ -569,30 +569,24 @@ int is_num(const char* value)
     return 0;
   }
 
-int cloud_check(job_info *jinfo)
+int cloud_check(JobInfo *jinfo)
 {
   char *owner=NULL;
   char *group=NULL;
   char *cluster=NULL;
   struct group *g = NULL;
-  char *jowner=NULL;
-  char *tmp = NULL;
   int ret=0;
 
-  tmp = strchr(jinfo->account,'@');
-  if (tmp == NULL)
-    {
-    jowner = strdup(jinfo->account);
-    }
+  string jowner;
+
+  size_t pos = jinfo->account.find('@');
+  if (pos == jinfo->account.npos)
+    jowner = jinfo->account;
   else
-    {
-    jowner = (char*) malloc(tmp-jinfo->account+1);
-    strncpy(jowner,jinfo->account,tmp-jinfo->account);
-    jowner[tmp-jinfo->account] = '\0';
-    }
+    jowner = jinfo->account.substr(0,pos);
 
   if (jinfo->cluster_mode == ClusterUse) {
-      cluster = xpbs_cache_get_local (jinfo->cluster_name, "cluster");
+      cluster = xpbs_cache_get_local (jinfo->cluster_name.c_str(), "cluster");
 
       if (cluster == NULL)
         {
@@ -606,7 +600,7 @@ int cloud_check(job_info *jinfo)
       if (owner == NULL)
         goto perm_done;
 
-      if (strcmp(jowner,owner) == 0)
+      if (jowner == owner)
         goto perm_done;
 
       /* user does not match, check for group */
@@ -623,17 +617,17 @@ int cloud_check(job_info *jinfo)
 
         while (*iter != NULL)
           {
-          if (strcmp(jowner,*iter) == 0)
+          if (jowner == *iter)
             goto perm_done;
 
           iter++;
           }
         }
 
-      if (is_users_in_group(group,jowner) != 0)
+      if (is_users_in_group(group,(char*)jowner.c_str()) != 0)
         goto perm_done;
 
-      jinfo->can_never_run = 1;
+      jinfo->can_never_run = true;
       ret = CLUSTER_PERMISSIONS; /* if reached, then the user doesn't have permission */
 
 perm_done:
@@ -646,15 +640,13 @@ perm_done:
   }
 
   if (jinfo->cluster_mode == ClusterCreate) {
-      cluster = xpbs_cache_get_local (jinfo -> custom_name, "cluster");
+      cluster = xpbs_cache_get_local (jinfo -> custom_name.c_str(), "cluster");
       if (cluster != NULL)
         ret=CLUSTER_RUNNING;
   }
 
   if (cluster)
       free(cluster);
-
-  free(jowner);
 
   return ret;
 }

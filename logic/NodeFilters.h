@@ -15,13 +15,13 @@ namespace Logic {
  */
 struct NodeSuitableForJob
   {
-  NodeSuitableForJob(const job_info *jinfo);
+  NodeSuitableForJob(const JobInfo *jinfo);
   bool operator ()(const node_info* node) const;
 
-  static void filter(const std::vector<node_info*>& nodes, std::vector<node_info*>& result, const job_info* jinfo);
+  static void filter(const std::vector<node_info*>& nodes, std::vector<node_info*>& result, const JobInfo* jinfo);
 
   private:
-    const job_info *p_jinfo;
+    const JobInfo *p_jinfo;
   };
 
 /** \brief Filter nodes usable for a node specification
@@ -31,20 +31,20 @@ struct NodeSuitableForJob
  */
 struct NodeSuitableForSpec
   {
-  NodeSuitableForSpec(const job_info *jinfo, const pars_spec_node *spec, SuitableNodeFilterMode mode);
+  NodeSuitableForSpec(const JobInfo *jinfo, const pars_spec_node *spec, SuitableNodeFilterMode mode);
   bool operator()(const node_info* node) const;
 
   /** \brief Filter for purposes of fairshare */
-  static void filter_fairshare(const std::vector<node_info*>& nodes, std::vector<node_info*>& result, const job_info* jinfo, const pars_spec_node* spec);
+  static void filter_fairshare(const std::vector<node_info*>& nodes, std::vector<node_info*>& result, const JobInfo* jinfo, const pars_spec_node* spec);
   /** \brief Filter for purposes of starvation */
-  static void filter_starving(const std::vector<node_info*>& nodes, std::vector<node_info*>& result, const job_info* jinfo, const pars_spec_node* spec);
+  static void filter_starving(const std::vector<node_info*>& nodes, std::vector<node_info*>& result, const JobInfo* jinfo, const pars_spec_node* spec);
   /** \brief Filter for purposes of scheduling */
-  static void filter_assign(const std::vector<node_info*>& nodes, std::vector<node_info*>& result, const job_info* jinfo, const pars_spec_node* spec);
+  static void filter_assign(const std::vector<node_info*>& nodes, std::vector<node_info*>& result, const JobInfo* jinfo, const pars_spec_node* spec);
   /** \brief Filter for purposes of rebooting nodes */
-  static void filter_reboot(const std::vector<node_info*>& nodes, std::vector<node_info*>& result, const job_info* jinfo, const pars_spec_node* spec);
+  static void filter_reboot(const std::vector<node_info*>& nodes, std::vector<node_info*>& result, const JobInfo* jinfo, const pars_spec_node* spec);
 
   private:
-    const job_info *p_jinfo;
+    const JobInfo *p_jinfo;
     const pars_spec_node *p_spec;
     SuitableNodeFilterMode p_mode;
   };

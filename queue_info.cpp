@@ -90,7 +90,7 @@
 
 #include "base/MiscHelpers.h"
 using namespace Scheduler;
-using namespace Base;
+using namespace Core;
 
 /*
  *
@@ -504,7 +504,7 @@ void free_queues(queue_info **qarr, char free_jobs_too)
  * @param qinfo Queue to be update
  * @param jinfo Job that is moved
  */
-void update_queue_on_move(queue_info *qinfo, job_info *jinfo)
+void update_queue_on_move(queue_info *qinfo, JobInfo *jinfo)
   {
   qinfo -> sc.running++; /* update the target queue */
   jinfo -> queue -> sc.queued--; /* update the local queue */
@@ -521,7 +521,7 @@ void update_queue_on_move(queue_info *qinfo, job_info *jinfo)
  * returns nothing;
  *
  */
-void update_queue_on_run(queue_info *qinfo, job_info *jinfo)
+void update_queue_on_run(queue_info *qinfo, JobInfo *jinfo)
   {
   jinfo->plan_on_queue(qinfo);
   }

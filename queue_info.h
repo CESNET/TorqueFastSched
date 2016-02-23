@@ -120,13 +120,13 @@ void free_queues(queue_info **qinfo, char free_jobs_too);
  * @param qinfo Queue to be update
  * @param jinfo Job that is moved
  */
-void update_queue_on_move(queue_info *qinfo, job_info *jinfo);
+void update_queue_on_move(queue_info *qinfo, JobInfo *jinfo);
 
 /*
  *      update_queue_on_run - update the information kept in a qinfo structure
  *                              when a job is run
  */
-void update_queue_on_run(queue_info *qinfo, job_info *jinfo);
+void update_queue_on_run(queue_info *qinfo, JobInfo *jinfo);
 
 /*
  *      free_queue_info - free space used by a queue info struct

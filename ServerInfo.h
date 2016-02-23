@@ -13,7 +13,7 @@ struct server_info
   {
   char *name;   /* name of server */
 
-  std::map<std::string, Scheduler::Base::DynamicResource> dynamic_resources; /* list of dynamic resources */
+  std::map<std::string, Scheduler::Core::DynamicResource> dynamic_resources; /* list of dynamic resources */
   char *default_queue;  /* the default queue atribute of the server */
   int max_run;   /* max jobs that can be run at one time */
   int max_user_run;  /* max jobs a user can run at one time */
@@ -22,8 +22,8 @@ struct server_info
   int num_nodes;  /* number of nodes associated with the server */
   state_count sc;  /* number of jobs in each state */
   queue_info **queues;  /* array of queues */
-  job_info **jobs;  /* array of jobs on the server */
-  job_info **running_jobs; /* array of jobs in the running state */
+  JobInfo **jobs;  /* array of jobs on the server */
+  JobInfo **running_jobs; /* array of jobs in the running state */
 
   node_info **nodes;  /* array of nodes associated with the server */
   node_info **non_dedicated_nodes; /* array of nodes, not exclusively assigned anywhere */

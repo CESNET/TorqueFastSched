@@ -11,7 +11,7 @@
 #include <map>
 
 namespace Scheduler {
-namespace Base {
+namespace Core {
 
 /** \brief Property registry
  *

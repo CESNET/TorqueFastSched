@@ -163,7 +163,7 @@ void decay_fairshare_trees()
  * returns nothing
  *
  */
-void update_usage_on_run(job_info *jinfo) // TODO zaintegrovat mem
+void update_usage_on_run(JobInfo *jinfo) // TODO zaintegrovat mem
   {
   resource_req *tmp = find_resource_req(jinfo->resreq, "procs");
   jinfo -> ginfo -> temp_usage += calculate_usage_value(jinfo -> resreq)*tmp->amount;
@@ -179,9 +179,9 @@ void update_usage_on_run(job_info *jinfo) // TODO zaintegrovat mem
  * return the found job or NULL on error
  *
  */
-job_info *extract_fairshare(job_info **jobs)
+JobInfo *extract_fairshare(JobInfo **jobs)
   {
-  job_info *max = NULL;  /* job with the max shares / percentage */
+  JobInfo *max = NULL;  /* job with the max shares / percentage */
   float max_value;  /* max shares / percentage */
   float cur_value;  /* the current shares / percentage value */
   int max_priority;
@@ -194,7 +194,7 @@ job_info *extract_fairshare(job_info **jobs)
 
     for (i = 0; jobs[i] != NULL; i++)
       {
-      if (jobs[i]->can_not_run || jobs[i]->state == JobRunning) continue;
+      if (!jobs[i]->suitable_for_run() || jobs[i]->state == JobRunning) continue;
 
       if (conf.priority_fairshare)
         {

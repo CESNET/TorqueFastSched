@@ -94,18 +94,18 @@ int is_ok_to_run_queue(queue_info *qinfo);
  * is_ok_to_run_job - check to see if it ok to run a job on the server
  */
 int is_ok_to_run_job(server_info *sinfo, queue_info *qinfo,
-                     job_info *jinfo, int preassign_starving);
+                     JobInfo *jinfo, int preassign_starving);
 
 /*
  *      check_run_job - function used by job_filter to filter out
  *                      non-running jobs.
  */
-int check_run_job(job_info *job, void *arg);
+int check_run_job(JobInfo *job, void *arg);
 
 /*
  *      count_by_user - count the amount of jobs a user has in a job array
  */
-int count_by_user(job_info **jobs, char *user);
+int count_by_user(JobInfo **jobs, char *user);
 
 /*
  *      check_server_max_group_run - check to see if group is within their
@@ -122,7 +122,7 @@ int check_queue_max_user_run(queue_info *qinfo, char *account);
 /*
  *      count_by_group - count number of jobs a group has in job array
  */
-int count_by_group(job_info **jobs, char *group);
+int count_by_group(JobInfo **jobs, char *group);
 
 
 /*
@@ -137,25 +137,25 @@ int check_server_max_user_run(server_info *sinfo, char *account);
  */
 int check_queue_max_group_run(queue_info *qinfo, char *group);
 
-int check_queue_proc_limits(queue_info *qinfo, job_info *jinfo);
+int check_queue_proc_limits(queue_info *qinfo, JobInfo *jinfo);
 
 /*
  *      will_cross_into_ded_time - check to see if a job would cross into
  *                                 dedicated time
  */
-int will_cross_ded_time_boundry(job_info *jinfo);
+int will_cross_ded_time_boundry(JobInfo *jinfo);
 
 /*
  *      check_nodes - check to see if there is suficient nodes available to
  *                    run a job.
  */
-int check_nodes(int pbs_sd, job_info *jinfo, node_info **ninfo_arr);
+int check_nodes(int pbs_sd, JobInfo *jinfo, node_info **ninfo_arr);
 
 /*
  *      is_node_available - determine that there is a node available to run
  *                          the job
  */
-int is_node_available(job_info *jinfo, node_info **ninfo_arr);
+int is_node_available(JobInfo *jinfo, node_info **ninfo_arr);
 
 /*
  *      check_ded_time_queue - check if it is the approprate time to run jobs
@@ -170,7 +170,7 @@ int check_ded_time_queue(queue_info *qinfo);
 */
 int check_ignored(queue_info *qinfo);
 
-int check_dynamic_resources(server_info *sinfo, job_info *jinfo);
+int check_dynamic_resources(server_info *sinfo, JobInfo *jinfo);
 
 #endif
 

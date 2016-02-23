@@ -4,20 +4,168 @@
 #include "logic/NodeFilters.h"
 #include "NodeSort.h"
 #include "RescInfoDb.h"
+#include "globals.h"
 
 #include "base/MiscHelpers.h"
 using namespace Scheduler;
-using namespace Base;
+using namespace Core;
+
+#include "include/gsl.h"
 
 #include <algorithm>
 #include <limits>
 using namespace std;
 
-void job_info::unplan_from_node(node_info* ninfo, pars_spec_node* spec)
+JobInfo::JobInfo() : job_id(), custom_name(), comment(), nodespec(),
+  queue(nullptr), qtime(0), stime(0), priority(0), account(), group(),
+  state(JobNoState), can_never_run(false), can_not_run(false),
+  calculated_fairshare(0), sched_nodespec(), p_planned_nodes(),
+  p_planned_start(0), p_waiting_for(), ginfo(nullptr), parsed_nodespec(nullptr),
+  schedule(), cluster_name(), cluster_mode(ClusterNone), placement(),
+  resreq(nullptr), resused(nullptr) {}
+
+JobInfo::~JobInfo()
+  {
+  free_resource_req_list(this->resreq);
+  free_resource_req_list(this->resused);
+  free_parsed_nodespec(this->parsed_nodespec);
+  }
+
+JobInfo::JobInfo(struct batch_status *job, queue_info *queue) : job_id(),
+  custom_name(), comment(), nodespec(), queue(nullptr), qtime(0), stime(0),
+  priority(0), account(), group(), state(JobNoState), can_never_run(false),
+  can_not_run(false), calculated_fairshare(0), sched_nodespec(),
+  p_planned_nodes(), p_planned_start(0), p_waiting_for(), ginfo(nullptr),
+  parsed_nodespec(nullptr), schedule(), cluster_name(),
+  cluster_mode(ClusterNone), placement(), resreq(nullptr), resused(nullptr)
+  {
+  struct attrl *attrp;  /* list of attributes returned from server */
+  int count;   /* int used in string -> int conversion */
+  char *endp;   /* used for strtol() */
+  resource_req *resreq;  /* resource_req list for resources requested  */
+
+  this->job_id = job->name;
+  this->queue = queue;
+
+  attrp = job -> attribs;
+
+  while (attrp != NULL)
+    {
+    if (!strcmp(attrp -> name, ATTR_name))
+      {
+      this->custom_name = attrp->value;
+      }
+    else if (!strcmp(attrp -> name, ATTR_comment))
+      {
+      this->comment = attrp->value;
+      }
+    else if (strcmp(attrp->resource,"processed_nodes") == 0)
+      {
+      this->nodespec = attrp->value;
+      }
+    else if (!strcmp(attrp -> name, ATTR_qtime))
+      {
+      count = strtol(attrp -> value, &endp, 10);
+
+      if (*endp != '\n')
+        this -> qtime = count;
+      else
+        this -> qtime = -1;
+      }
+    else if (!strcmp(attrp -> name, ATTR_start_time))
+      {
+      count = strtol(attrp -> value, &endp, 10);
+
+      if (*endp != '\n')
+        this -> stime = count;
+      else
+        this -> stime = -1;
+      }
+    else if (!strcmp(attrp -> name, ATTR_p))
+      {
+      count = strtol(attrp -> value, &endp, 10);
+
+      if (*endp != '\n')
+        this -> priority = count;
+      else
+        this -> priority = -1;
+      }
+    else if (!strcmp(attrp -> name, ATTR_euser))
+      this->account = attrp -> value;
+    else if (!strcmp(attrp -> name, ATTR_egroup))
+      this->group = attrp -> value;
+    else if (!strcmp(attrp -> name, ATTR_state))
+      set_state(attrp -> value, this);
+    else if (!strcmp(attrp -> name, ATTR_fairshare_cost))
+      this -> calculated_fairshare = atof(attrp->value);
+    else if (!strcmp(attrp -> name, ATTR_schedspec))
+      this -> sched_nodespec = attrp -> value;
+    else if (!strcmp(attrp -> name, ATTR_planned_nodes))
+      this -> p_planned_nodes = attrp -> value;
+    else if (!strcmp(attrp -> name, ATTR_waiting_for))
+      this -> p_waiting_for = attrp -> value;
+    else if (!strcmp(attrp -> name, ATTR_planned_start))
+      {
+      count = strtol(attrp -> value, &endp, 10);
+
+      if (*endp != '\n')
+        this -> p_planned_start = count;
+      else
+        this -> p_planned_start = -1;
+      }
+    else if (!strcmp(attrp -> name, ATTR_l))    /* resources requested*/
+      {
+      /* special handling for cluster */
+      if (strcmp(attrp->resource,"cluster") == 0)
+        {
+        if (strcmp(attrp->value,"create") == 0)
+          {
+          this->cluster_mode = ClusterCreate;
+          }
+        else
+          {
+          this->cluster_mode = ClusterUse;
+          this->cluster_name = attrp->value;
+          }
+        }
+      else if (strcmp(attrp->resource,"place") == 0)
+        {
+        this->placement = attrp->value;
+        }
+      }
+    else if (!strcmp(attrp -> name, ATTR_total_resources))
+      {
+      resreq = find_alloc_resource_req(attrp -> resource, this -> resreq);
+
+      if (resreq != NULL)
+        {
+        resreq -> res_str = strdup(attrp -> value);
+        resreq -> amount = res_to_num(attrp -> value);
+        }
+
+      if (this -> resreq == NULL)
+        this -> resreq = resreq;
+      }
+    else if (!strcmp(attrp -> name, ATTR_used))    /* resources used */
+      {
+      resreq = find_alloc_resource_req(attrp -> resource, this -> resused);
+
+      if (resreq != NULL)
+        resreq -> amount = res_to_num(attrp -> value);
+
+      if (this -> resused == NULL)
+        this -> resused = resreq;
+      }
+
+    attrp = attrp -> next;
+    }
+  }
+
+void JobInfo::unplan_from_node(node_info* ninfo, pars_spec_node* spec)
   {
   Resource *res;
 
-  if (is_exclusive)
+  if (this->is_exclusive())
     ninfo->freeup_proc(ninfo->get_cores_total());
   else
     ninfo->freeup_proc(spec->procs);
@@ -69,7 +217,7 @@ void job_info::unplan_from_node(node_info* ninfo, pars_spec_node* spec)
     }
   }
 
-void job_info::plan_on_node(node_info* ninfo, pars_spec_node* spec)
+void JobInfo::plan_on_node(node_info* ninfo, pars_spec_node* spec)
   {
   Resource *res;
 
@@ -83,7 +231,7 @@ void job_info::plan_on_node(node_info* ninfo, pars_spec_node* spec)
       }
     }
 
-  if (this->is_exclusive)
+  if (this->is_exclusive())
     ninfo->deplete_proc(ninfo->get_cores_total());
   else
     ninfo->deplete_proc(spec->procs);
@@ -135,11 +283,11 @@ void job_info::plan_on_node(node_info* ninfo, pars_spec_node* spec)
     }
   }
 
-void job_info::plan_on_queue(queue_info* qinfo)
+void JobInfo::plan_on_queue(queue_info* qinfo)
   {
   }
 
-void job_info::plan_on_server(server_info* sinfo)
+void JobInfo::plan_on_server(server_info* sinfo)
   {
   /* count dynamic resources */
   resource_req *req = resreq;
@@ -155,25 +303,18 @@ void job_info::plan_on_server(server_info* sinfo)
     }
   }
 
-int job_info::preprocess()
+int JobInfo::preprocess()
   {
-  const char* processed_nodespec;
-  if (this->nodespec == NULL || this->nodespec[0] == '\0')
-    processed_nodespec = "1:ppn=1";
-  else
-    processed_nodespec = this->nodespec;
+  if (this->nodespec.size() == 0)
+    this->nodespec = "1:ppn=1";
 
-  if ((this->parsed_nodespec = parse_nodespec(processed_nodespec)) == NULL)
+  if ((this->parsed_nodespec = parse_nodespec(this->nodespec.c_str())) == NULL)
     return SCHD_ERROR;
-
-  /* setup some side values, that need parsed nodespec to be determined */
-  this->is_exclusive = this->parsed_nodespec->is_exclusive;
-  this->is_multinode = (this->parsed_nodespec->total_nodes > 1)?1:0;
 
   return SUCCESS;
   }
 
-double job_info::calculate_fairshare_cost(const vector<node_info*>& nodes) const
+double JobInfo::calculate_fairshare_cost(const vector<node_info*>& nodes) const
   {
   double fairshare_cost = 0;
 
@@ -182,7 +323,7 @@ double job_info::calculate_fairshare_cost(const vector<node_info*>& nodes) const
     {
     vector<node_info*> fairshare_nodes; // construct possible nodes
     NodeSuitableForSpec::filter_fairshare(nodes,fairshare_nodes,this,iter);
-    sort(fairshare_nodes.begin(),fairshare_nodes.end(),NodeCostSort(iter->procs,iter->mem,this->is_exclusive));
+    sort(fairshare_nodes.begin(),fairshare_nodes.end(),NodeCostSort(iter->procs,iter->mem,this->is_exclusive()));
 
     unsigned i = 0;
     for (unsigned count = 0; count < iter->node_count; count++)
@@ -193,7 +334,7 @@ double job_info::calculate_fairshare_cost(const vector<node_info*>& nodes) const
       unsigned long long node_procs = fairshare_nodes[i]->get_cores_total();
       unsigned long long node_mem   = fairshare_nodes[i]->get_mem_total();
 
-      if (this->is_exclusive)
+      if (this->is_exclusive())
         fairshare_cost += node_procs*fairshare_nodes[i]->get_node_cost();
       else
         fairshare_cost += max(static_cast<double>(iter->mem)/node_mem,static_cast<double>(iter->procs)/node_procs)*node_procs*fairshare_nodes[i]->get_node_cost();
@@ -206,7 +347,7 @@ double job_info::calculate_fairshare_cost(const vector<node_info*>& nodes) const
   return fairshare_cost;
   }
 
-long job_info::get_walltime() const
+long JobInfo::get_walltime() const
   {
   resource_req *resc = find_resource_req(this->resreq,"walltime");
   if (resc == NULL)
@@ -215,11 +356,32 @@ long job_info::get_walltime() const
   return resc->amount;
   }
 
-time_t job_info::completion_time()
+time_t JobInfo::completion_time()
   {
   resource_req *req = find_resource_req(this->resreq,"walltime");
   if (req == NULL)
     return numeric_limits<time_t>::max();
 
   return stime + req->amount;
+  }
+
+bool JobInfo::is_starving() const noexcept
+  {
+  Expects(this->queue != NULL);
+
+  return (this->state == JobQueued && this->queue->starving_support >= 0 && this->qtime + this->queue->starving_support < cstat.current_time);
+  }
+
+bool JobInfo::is_multinode() const noexcept
+  {
+  Expects(this->parsed_nodespec != NULL);
+
+  return this->parsed_nodespec->total_nodes > 1;
+  }
+
+bool JobInfo::is_exclusive() const noexcept
+  {
+  Expects(this->parsed_nodespec != NULL);
+
+  return this->parsed_nodespec->is_exclusive;
   }

@@ -108,7 +108,7 @@ int init_schedule_cycle(server_info *sinfo);
  *      run_update_job - run and update the job information
  */
 int run_update_job(int pbs_sd, server_info *sinfo, queue_info *qinfo,
-                   job_info *jinfo);
+                   JobInfo *jinfo);
 /*
  *
  *      next_job - find the next job to be run by the scheduler
@@ -121,7 +121,7 @@ int run_update_job(int pbs_sd, server_info *sinfo, queue_info *qinfo,
  *
  */
 
-job_info *next_job(server_info *sinfo, int ret_code);
+JobInfo *next_job(server_info *sinfo, int ret_code);
 
 #if DEPRECATED
 /*
@@ -133,7 +133,7 @@ int update_last_running(world_server_t *server);
  *
  *      update_starvation - update jobs sch_priority for starvation
  */
-job_info *update_starvation(job_info **jobs);
+JobInfo *update_starvation(JobInfo **jobs);
 
 
 void

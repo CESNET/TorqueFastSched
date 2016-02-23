@@ -139,8 +139,8 @@ int cmp_job_walltime_asc(const void *j1, const void *j2)
   {
   resource_req *req1, *req2;
 
-  req1 = find_resource_req((*(job_info**) j1) -> resreq, "walltime");
-  req2 = find_resource_req((*(job_info**) j2) -> resreq, "walltime");
+  req1 = find_resource_req((*(JobInfo**) j1) -> resreq, "walltime");
+  req2 = find_resource_req((*(JobInfo**) j2) -> resreq, "walltime");
 
   if (req1 != NULL && req2 != NULL)
     {
@@ -165,8 +165,8 @@ int cmp_job_walltime_dsc(const void *j1, const void *j2)
   {
   resource_req *req1, *req2;
 
-  req1 = find_resource_req((*(job_info**) j1) -> resreq, "walltime");
-  req2 = find_resource_req((*(job_info**) j2) -> resreq, "walltime");
+  req1 = find_resource_req((*(JobInfo**) j1) -> resreq, "walltime");
+  req2 = find_resource_req((*(JobInfo**) j2) -> resreq, "walltime");
 
   if (req1 != NULL && req2 != NULL)
     {
@@ -190,8 +190,8 @@ int cmp_job_cput_asc(const void *j1, const void *j2)
   {
   resource_req *req1, *req2;
 
-  req1 = find_resource_req((*(job_info**) j1) -> resreq, "cput");
-  req2 = find_resource_req((*(job_info**) j2) -> resreq, "cput");
+  req1 = find_resource_req((*(JobInfo**) j1) -> resreq, "cput");
+  req2 = find_resource_req((*(JobInfo**) j2) -> resreq, "cput");
 
   if (req1 != NULL && req2 != NULL)
     {
@@ -215,8 +215,8 @@ int cmp_job_cput_dsc(const void *j1, const void *j2)
   {
   resource_req *req1, *req2;
 
-  req1 = find_resource_req((*(job_info**) j1) -> resreq, "cput");
-  req2 = find_resource_req((*(job_info**) j2) -> resreq, "cput");
+  req1 = find_resource_req((*(JobInfo**) j1) -> resreq, "cput");
+  req2 = find_resource_req((*(JobInfo**) j2) -> resreq, "cput");
 
   if (req1 != NULL && req2 != NULL)
     {
@@ -240,8 +240,8 @@ int cmp_job_mem_asc(const void *j1, const void *j2)
   {
   resource_req *req1, *req2;
 
-  req1 = find_resource_req((*(job_info**) j1) -> resreq, "mem");
-  req2 = find_resource_req((*(job_info**) j2) -> resreq, "mem");
+  req1 = find_resource_req((*(JobInfo**) j1) -> resreq, "mem");
+  req2 = find_resource_req((*(JobInfo**) j2) -> resreq, "mem");
 
   if (req1 != NULL && req2 != NULL)
     {
@@ -265,8 +265,8 @@ int cmp_job_mem_dsc(const void *j1, const void *j2)
   {
   resource_req *req1, *req2;
 
-  req1 = find_resource_req((*(job_info**) j1) -> resreq, "mem");
-  req2 = find_resource_req((*(job_info**) j2) -> resreq, "mem");
+  req1 = find_resource_req((*(JobInfo**) j1) -> resreq, "mem");
+  req2 = find_resource_req((*(JobInfo**) j2) -> resreq, "mem");
 
   if (req1 != NULL && req2 != NULL)
     {
@@ -288,9 +288,9 @@ int cmp_job_mem_dsc(const void *j1, const void *j2)
  */
 int cmp_job_prio_asc(const void *j1, const void *j2)
   {
-  if ((*(job_info **) j1) -> priority < (*(job_info **) j2) -> priority)
+  if ((*(JobInfo **) j1) -> priority < (*(JobInfo **) j2) -> priority)
     return -1;
-  else if ((*(job_info **) j1) -> priority > (*(job_info **) j2) -> priority)
+  else if ((*(JobInfo **) j1) -> priority > (*(JobInfo **) j2) -> priority)
     return 1;
   else
     return 0;
@@ -303,9 +303,9 @@ int cmp_job_prio_asc(const void *j1, const void *j2)
  */
 int cmp_job_prio_dsc(const void *j1, const void *j2)
   {
-  if ((*(job_info **) j1) -> priority < (*(job_info **) j2) -> priority)
+  if ((*(JobInfo **) j1) -> priority < (*(JobInfo **) j2) -> priority)
     return 1;
-  else if ((*(job_info **) j1) -> priority > (*(job_info **) j2) -> priority)
+  else if ((*(JobInfo **) j1) -> priority > (*(JobInfo **) j2) -> priority)
     return -1;
   else
     return 0;
@@ -321,8 +321,8 @@ int cmp_fair_share(const void *j1, const void *j2)
   {
   group_info *g1, *g2;
 
-  g1 = (*(job_info **) j1) -> ginfo;
-  g2 = (*(job_info **) j2) -> ginfo;
+  g1 = (*(JobInfo **) j1) -> ginfo;
+  g2 = (*(JobInfo **) j2) -> ginfo;
 
   if (g1 -> percentage > g2 -> percentage)
     return 1;
@@ -360,11 +360,5 @@ int multi_sort(const void *j1, const void *j2)
  */
 int cmp_sort(const void *v1, const void *v2)
   {
-  /* sort on the internal scheduler priority (used for starvation code) */
-  if ((*(job_info **) v1) -> sch_priority < (*(job_info **) v2) -> sch_priority)
-    return 1;
-  else if ((*(job_info **) v1)->sch_priority > (*(job_info **) v2)->sch_priority)
-    return -1;
-  else
-    return cstat.sort_by -> cmp_func(v1, v2);
+  return cstat.sort_by -> cmp_func(v1, v2);
   }

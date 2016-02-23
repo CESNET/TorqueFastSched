@@ -112,7 +112,7 @@ struct queue_info;
 
 struct node_info;
 
-struct job_info;
+struct JobInfo;
 
 struct resource_req;
 
@@ -132,7 +132,7 @@ typedef struct server_info server_info;
 
 typedef struct queue_info queue_info;
 
-typedef struct job_info job_info;
+typedef struct JobInfo JobInfo;
 
 typedef struct node_info node_info;
 
@@ -231,8 +231,8 @@ unsigned is_admin_queue : 1; /* admin job queue */
   int priority;                 /* priority of queue */
   time_t starving_support;      /* time required for jobs to starve */
 
-  job_info **jobs;  /* array of jobs that reside in queue */
-  job_info **running_jobs; /* array of jobs in the running state */
+  JobInfo **jobs;  /* array of jobs that reside in queue */
+  JobInfo **running_jobs; /* array of jobs in the running state */
 
   unsigned excl_node_count;
   unsigned excl_node_capacity;
@@ -435,7 +435,7 @@ unsigned is_ded_time:
 
   time_t current_time;
 
-  job_info *starving_job; /* the most starving job */
+  JobInfo *starving_job; /* the most starving job */
 
   };
 

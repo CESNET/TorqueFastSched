@@ -7,7 +7,7 @@
 #include "boost/shared_ptr.hpp"
 
 namespace Scheduler {
-namespace Base {
+namespace Core {
 
 class ResourceSet
   {

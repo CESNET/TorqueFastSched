@@ -23,6 +23,7 @@ extern "C" {
 }
 
 #include "RescInfoDb.h"
+#include "SchedulerCore_ConnectionMgr.h"
 
 extern void dump_current_fairshare(group_info *root);
 
@@ -39,7 +40,7 @@ World::World(int argc, char *argv[])
   resc_info_db.read_db(string("/var/spool/torque/sched_priv/resources.def"));
   }
 
-job_info ** merge_job_arrays(job_info **arr1, job_info **arr2)
+JobInfo ** merge_job_arrays(JobInfo **arr1, JobInfo **arr2)
   {
   int size1 = 0, size2 = 0;
   if (arr1 != NULL)
@@ -47,7 +48,7 @@ job_info ** merge_job_arrays(job_info **arr1, job_info **arr2)
   if (arr2 != NULL)
     for (size2 = 0; arr2[size2] != NULL; size2++);
 
-  job_info ** result = (job_info**)malloc(sizeof(job_info*)*(size1+size2+1));
+  JobInfo ** result = (JobInfo**)malloc(sizeof(JobInfo*)*(size1+size2+1));
 
   int index = 0;
   if (arr1 != NULL)
@@ -76,6 +77,7 @@ bool World::fetch_servers()
     if ((p_info = query_server(p_connections.make_master_connection(string(conf.local_server)))) == NULL)
       {
       sched_log(PBSEVENT_ERROR, PBS_EVENTCLASS_SERVER, __PRETTY_FUNCTION__, "Couldn't fetch information from server \"%s\".",conf.local_server);
+      p_connections.reset_connection(string(conf.local_server));
       return false;
       }
     }
@@ -94,7 +96,7 @@ bool World::fetch_servers()
       {
       if (p_info->queues[j]->is_global)
         {
-        job_info **jobs;
+        JobInfo **jobs;
         try
           {
           if ((jobs = query_jobs(p_connections.make_remote_connection(string(conf.slave_servers[i])),p_info->queues[j])) == NULL)
@@ -109,13 +111,14 @@ bool World::fetch_servers()
           {
           sched_log(PBSEVENT_ERROR, PBS_EVENTCLASS_SERVER, __PRETTY_FUNCTION__, e.what());
           // hard error, break out of this server
+          p_connections.reset_connection(string(conf.slave_servers[i]));
           break;
           }
 
         // merge the new jobs into the local queue
         if (jobs[0] != NULL)
           {
-          job_info **merged = merge_job_arrays(p_info->queues[j]->jobs,jobs);
+          JobInfo **merged = merge_job_arrays(p_info->queues[j]->jobs,jobs);
           init_state_count(&p_info->queues[j]->sc);
           count_states(merged,&p_info->queues[j]->sc);
 
@@ -165,20 +168,20 @@ void World::update_fairshare()
      */
     for (size_t i = 0; i < p_last_running.size(); i++)
       {
-      job_info** jobs = p_info->jobs;
+      JobInfo** jobs = p_info->jobs;
       group_info *user = p_last_running[i].ginfo;
 
       int j;
       for (j = 0; jobs[j] != NULL; j++)
         {
         if (jobs[j] -> state == JobCompleted || jobs[j] -> state == JobExiting || jobs[j] -> state == JobRunning)
-          if (!strcmp(p_last_running[i].name, jobs[j] -> name))
+          if (!strcmp(p_last_running[i].name, jobs[j] -> job_id.c_str()))
             break;
         }
 
       if (jobs[j] != NULL)
         {
-        if (jobs[j]->calculated_fairshare != -1)
+        if (jobs[j]->calculated_fairshare != 0)
           {
           user -> usage += (calculate_usage_value(jobs[j] -> resused) -
                            calculate_usage_value(p_last_running[i].resused))*jobs[j]->calculated_fairshare;
@@ -257,11 +260,11 @@ void World::init_scheduling_cycle()
       {
       for (int i = 0; i < p_info -> num_queues; i++)
         {
-        qsort(p_info->queues[i]->jobs, p_info->queues[i]->sc.total, sizeof(job_info *), cmp_sort);
+        qsort(p_info->queues[i]->jobs, p_info->queues[i]->sc.total, sizeof(JobInfo *), cmp_sort);
         }
       }
     else
-      qsort(p_info -> jobs, p_info -> sc.total, sizeof(job_info *), cmp_sort);
+      qsort(p_info -> jobs, p_info -> sc.total, sizeof(JobInfo *), cmp_sort);
     }
 
   next_job(p_info, INITIALIZE);
@@ -279,14 +282,14 @@ void World::update_last_running()
 
   for (int i = 0; p_info->running_jobs[i] != NULL; i++)
     {
-    p_last_running[i].name = strdup(p_info->running_jobs[i]->name);
+    p_last_running[i].name = strdup(p_info->running_jobs[i]->job_id.c_str());
     p_last_running[i].resused = clone_resource_req_list(p_info->running_jobs[i]->resused);
-    p_last_running[i].account = strdup(p_info->running_jobs[i]->account);
+    p_last_running[i].account = strdup(p_info->running_jobs[i]->account.c_str());
     p_last_running[i].ginfo = p_info->running_jobs[i]->ginfo;
     }
   }
 
-int World::try_run_job(job_info *jinfo)
+int World::try_run_job(JobInfo *jinfo)
   {
   int booting = 0;
   double minspec = 0;
@@ -298,10 +301,10 @@ int World::try_run_job(job_info *jinfo)
 
   bool remote = false;
   int socket;
-  if (string(jinfo->name).find(conf.local_server) == string::npos)
+  if (jinfo->job_id.find(conf.local_server) == string::npos)
     {
     remote = true;
-    string jobid = string(jinfo->name);
+    string jobid = jinfo->job_id;
     size_t firstdot = jobid.find('.');
     string server_name = jobid.substr(firstdot+1);
 
@@ -323,13 +326,13 @@ int World::try_run_job(job_info *jinfo)
 
       DIS_tcp_settimeout(p_info->job_start_timeout*2+30); /* move + run, double the tolerance */
 
-      ret = pbs_movejob(socket, jinfo->name, (char*)destination.c_str(), best_node_name);
+      ret = pbs_movejob(socket, const_cast<char*>(jinfo->job_id.c_str()), (char*)destination.c_str(), best_node_name);
       }
     else
       {
       DIS_tcp_settimeout(p_info->job_start_timeout+30); /* add a generous 30 seconds communication overhead */
 
-      ret = pbs_runjob(socket, jinfo->name, best_node_name, NULL);
+      ret = pbs_runjob(socket, const_cast<char*>(jinfo->job_id.c_str()), best_node_name, NULL);
       }
     }
   else
@@ -345,11 +348,11 @@ int World::try_run_job(job_info *jinfo)
     {
     if (!booting)
       {
-      sched_log(PBSEVENT_SCHED, PBS_EVENTCLASS_JOB, jinfo -> name, "Job Run.");
+      sched_log(PBSEVENT_SCHED, PBS_EVENTCLASS_JOB, jinfo -> job_id.c_str(), "Job Run.");
       }
     else
       {
-      sched_log(PBSEVENT_SCHED, PBS_EVENTCLASS_JOB, jinfo -> name, "Job Waiting for booting node.");
+      sched_log(PBSEVENT_SCHED, PBS_EVENTCLASS_JOB, jinfo -> job_id.c_str(), "Job Waiting for booting node.");
       }
 
     update_server_on_run(p_info, jinfo);
@@ -436,7 +439,7 @@ void World::run()
     int run_errors = 0;
 
     /* main scheduling loop */
-    job_info *jinfo;
+    JobInfo *jinfo;
     while ((run_errors <= 3) && (jinfo = next_job(p_info, 0)))
       {
       if (active_cycle && difftime(time(NULL),cycle_start) > conf.max_cycle)
@@ -453,15 +456,15 @@ void World::run()
         active_cycle = true;
 
         if (!jinfo->queue->is_admin_queue)
-          p_info->exec_count[string(jinfo->account)] += 1;
+          p_info->exec_count[jinfo->account] += 1;
 
-        sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->name, "Trying to execute job.");
+        sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), "Trying to execute job.");
 
         /* split local vs. remote */
         if (try_run_job(jinfo) != 0)
           {
-          jinfo->can_not_run = 1;
-          sched_log(PBSEVENT_ERROR, PBS_EVENTCLASS_JOB, jinfo->name, "Server and scheduler mismatch: %s", jinfo->comment);
+          jinfo->can_not_run = true;
+          sched_log(PBSEVENT_ERROR, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), "Server and scheduler mismatch: %s", jinfo->comment.c_str());
           run_errors++;
           continue;
           }
@@ -471,7 +474,7 @@ void World::run()
         }
       else
         {
-        jinfo->can_not_run = 1;
+        jinfo->can_not_run = true;
 
         char log_msg[MAX_LOG_SIZE]; /* used to log an message about job */
         char comment[MAX_COMMENT_SIZE]; /* used to update comment of job */
@@ -480,7 +483,7 @@ void World::run()
           {
           /* determine connection and update on correct server */
           if (update_job_comment(p_connections.get_master_connection(), jinfo, comment) == 0)
-            sched_log(PBSEVENT_SCHED, PBS_EVENTCLASS_JOB, jinfo->name, log_msg);
+            sched_log(PBSEVENT_SCHED, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), log_msg);
 
           if ((ret != NOT_QUEUED) && cstat.strict_fifo && (!jinfo->queue->is_global))
             {

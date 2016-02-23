@@ -10,7 +10,7 @@
 #include "BaseFwd.h"
 
 namespace Scheduler {
-namespace Base {
+namespace Core {
 
 /** \brief Convert a comma separated string into a set of strings
  * @param list Comma separated text

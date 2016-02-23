@@ -96,7 +96,7 @@
 #include "base/PropRegistry.h"
 
 using namespace Scheduler;
-using namespace Base;
+using namespace Core;
 using namespace std;
 
 /* Internal functions */
@@ -104,11 +104,9 @@ int check_server_max_run(server_info *sinfo);
 int check_queue_max_run(queue_info *qinfo);
 int check_ded_time_queue(queue_info *qinfo);
 int check_queue_remote_local(queue_info *qinfo);
-int check_node_availability(job_info *jinfo, node_info **ninfo_arr);
-int check_ded_time_boundry(job_info *jinfo);
-int check_nodespec(server_info *sinfo, job_info *jinfo, int nodecount, node_info **ninfo_arr, int preassign_starving);
-
-
+int check_node_availability(JobInfo *jinfo, node_info **ninfo_arr);
+int check_ded_time_boundry(JobInfo *jinfo);
+int check_nodespec(server_info *sinfo, JobInfo *jinfo, int nodecount, node_info **ninfo_arr, int preassign_starving);
 
 /*
  *
@@ -165,17 +163,17 @@ int is_ok_to_run_queue(queue_info *qinfo)
  *
  */
 int is_ok_to_run_job(server_info *sinfo, queue_info *qinfo,
-                     job_info *jinfo, int preassign_starving)
+                     JobInfo *jinfo, int preassign_starving)
   {
   int rc;                       /* Return Code */
 
   if (sinfo->exec_count[string(jinfo->account)] >= conf.max_user_run)
     {
-    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->name, "Too many job starts for this user.");
+    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), "Too many job starts for this user.");
     return SCHEDULER_LOOP_RUN_LIMIT_REACHED;
     }
 
-  if (jinfo->placement != NULL)
+  if (jinfo->placement.size() != 0)
     {
     pair<bool,size_t> reg = get_prop_registry()->get_property_id(jinfo->placement);
     if (!reg.first)
@@ -192,49 +190,49 @@ int is_ok_to_run_job(server_info *sinfo, queue_info *qinfo,
 
   if ((rc = jinfo->preprocess()) != SUCCESS)
     {
-    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->name, "Couldn't process jobs nodespec.");
+    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), "Couldn't process jobs nodespec.");
     return rc;
     }
 
   if ((rc = check_server_max_run(sinfo)))
     {
-    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->name, "Job isn't eligible for run, because server limit of running jobs was already reached.");
+    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), "Job isn't eligible for run, because server limit of running jobs was already reached.");
     return rc;
     }
 
-  if ((rc = check_server_max_user_run(sinfo, jinfo -> account)))
+  if ((rc = check_server_max_user_run(sinfo, (char*)jinfo -> account.c_str())))
     {
-    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->name, "Job isn't eligible for run, because owner of the job already reached the per-user server limit of running jobs.");
+    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), "Job isn't eligible for run, because owner of the job already reached the per-user server limit of running jobs.");
     return rc;
     }
 
-  if ((rc = check_server_max_group_run(sinfo, jinfo -> group)))
+  if ((rc = check_server_max_group_run(sinfo, (char*)jinfo -> group.c_str())))
     {
-    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->name, "Job isn't eligible for run, because owner of the job already reached the per-group server limit of running jobs.");
+    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), "Job isn't eligible for run, because owner of the job already reached the per-group server limit of running jobs.");
     return rc;
     }
 
   if ((rc = check_queue_max_run(qinfo)))
     {
-    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->name, "Job isn't eligible for run, because queue (%s) limit of running jobs was already reached.",qinfo->name);
+    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), "Job isn't eligible for run, because queue (%s) limit of running jobs was already reached.",qinfo->name);
     return rc;
     }
 
-  if ((rc = check_queue_max_user_run(qinfo, jinfo -> account)))
+  if ((rc = check_queue_max_user_run(qinfo, (char*)jinfo -> account.c_str())))
     {
-    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->name, "Job isn't eligible for run, because owner of the job already reached the per-user queue (%s) limit of running jobs.",qinfo->name);
+    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), "Job isn't eligible for run, because owner of the job already reached the per-user queue (%s) limit of running jobs.",qinfo->name);
     return rc;
     }
 
-  if ((rc = check_queue_max_group_run(qinfo, jinfo -> group)))
+  if ((rc = check_queue_max_group_run(qinfo, (char*)jinfo -> group.c_str())))
     {
-    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->name, "Job isn't eligible for run, because owner of the job already reached the per-group queue (%s) limit of running jobs.",qinfo->name);
+    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), "Job isn't eligible for run, because owner of the job already reached the per-group queue (%s) limit of running jobs.",qinfo->name);
     return rc;
     }
 
   if ((rc = check_queue_proc_limits(qinfo,jinfo)))
     {
-    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->name, "Job isn't eligible for run, because the queue (%s) limit of used processors (global/user/group) was already reached.",qinfo->name);
+    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), "Job isn't eligible for run, because the queue (%s) limit of used processors (global/user/group) was already reached.",qinfo->name);
     return rc;
     }
 
@@ -243,13 +241,13 @@ int is_ok_to_run_job(server_info *sinfo, queue_info *qinfo,
 
   if ((rc = cloud_check(jinfo)))
     {
-    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->name, "Job isn't eligible to run because the user doesn't have permission to submit inside this virtual cluster, or a cluster with the specified name already exists.");
+    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), "Job isn't eligible to run because the user doesn't have permission to submit inside this virtual cluster, or a cluster with the specified name already exists.");
     return rc;
     }
 
   if ((rc = check_dynamic_resources(sinfo, jinfo)) != SUCCESS)
     {
-    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->name, "Job isn't eligible for run, because there aren't currently enough global dynamic resources.");
+    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), "Job isn't eligible for run, because there aren't currently enough global dynamic resources.");
     return INSUFICIENT_DYNAMIC_RESOURCE;
     }
 
@@ -315,7 +313,7 @@ int check_queue_max_user_run(queue_info *qinfo, char *account)
 
 
 /** Check if the queue does not belong to remote server and is local
-* 
+*
 */
 int check_queue_remote_local(queue_info *qinfo)
   {
@@ -376,12 +374,12 @@ int check_server_max_group_run(server_info *sinfo, char *group)
   }
 
 static int count_queue_procs(queue_info *qinfo);
-static int count_queue_user_procs(queue_info *qinfo, job_info *jinfo);
-static int count_queue_group_procs(queue_info *qinfo, job_info *jinfo);
+static int count_queue_user_procs(queue_info *qinfo, JobInfo *jinfo);
+static int count_queue_group_procs(queue_info *qinfo, JobInfo *jinfo);
 
-int check_queue_proc_limits(queue_info *qinfo, job_info *jinfo)
+int check_queue_proc_limits(queue_info *qinfo, JobInfo *jinfo)
   {
-  pars_spec *spec = parse_nodespec(jinfo->nodespec);
+  pars_spec *spec = parse_nodespec(jinfo->nodespec.c_str());
   int this_job = spec->total_procs;
   free_parsed_nodespec(spec);
 
@@ -416,7 +414,7 @@ int check_queue_proc_limits(queue_info *qinfo, job_info *jinfo)
  * @param jinfo   Job with resource requests
  * @return SUCCESS if met, failure otherwise
  */
-int check_dynamic_resources(server_info* sinfo, job_info *jinfo)
+int check_dynamic_resources(server_info* sinfo, JobInfo *jinfo)
   {
   resource_req *resreq;
   RescInfoDb::iterator i;
@@ -452,7 +450,7 @@ int check_dynamic_resources(server_info* sinfo, job_info *jinfo)
  * returns the count
  *
  */
-int count_by_user(job_info **jobs, char *user)
+int count_by_user(JobInfo **jobs, char *user)
   {
   int count = 0;  /* the accumulator to count the user's jobs */
   int i;
@@ -460,7 +458,7 @@ int count_by_user(job_info **jobs, char *user)
   if (jobs != NULL)
     {
     for (i = 0; jobs[i] != NULL; i++)
-      if (!strcmp(user, jobs[i] -> account))
+      if (jobs[i] -> account == user)
         count++;
     }
 
@@ -478,7 +476,7 @@ int count_by_user(job_info **jobs, char *user)
  * returns the count
  *
  */
-int count_by_group(job_info **jobs, char *group)
+int count_by_group(JobInfo **jobs, char *group)
   {
   int i;
   int count = 0;  /* an accumulator to count the group's jobs */
@@ -487,7 +485,7 @@ int count_by_group(job_info **jobs, char *group)
     {
     for (i = 0; jobs[i] != NULL; i++)
       {
-      if (!strcmp(jobs[i] -> group, group))
+      if (jobs[i] -> group == group)
         count++;
       }
     }
@@ -500,7 +498,7 @@ static int count_queue_procs(queue_info *qinfo)
   int procs = 0;
   for (int i = 0; i < qinfo->sc.running; i++)
     {
-    pars_spec *spec = parse_nodespec(qinfo->running_jobs[i]->nodespec);
+    pars_spec *spec = parse_nodespec(qinfo->running_jobs[i]->nodespec.c_str());
     procs += spec->total_procs;
     free_parsed_nodespec(spec);
     }
@@ -508,15 +506,15 @@ static int count_queue_procs(queue_info *qinfo)
   return procs;
   }
 
-static int count_queue_user_procs(queue_info *qinfo, job_info *jinfo)
+static int count_queue_user_procs(queue_info *qinfo, JobInfo *jinfo)
   {
   int procs = 0;  /* the accumulator to count the user's jobs */
 
   for (int i = 0; i < qinfo->sc.running; i++)
     {
-    if (!strcmp(jinfo->account, qinfo->running_jobs[i]->account))
+    if (jinfo->account == qinfo->running_jobs[i]->account)
       {
-      pars_spec *spec = parse_nodespec(qinfo->running_jobs[i]->nodespec);
+      pars_spec *spec = parse_nodespec(qinfo->running_jobs[i]->nodespec.c_str());
       procs += spec->total_procs;
       free_parsed_nodespec(spec);
       }
@@ -525,15 +523,15 @@ static int count_queue_user_procs(queue_info *qinfo, job_info *jinfo)
   return procs;
   }
 
-static int count_queue_group_procs(queue_info *qinfo, job_info *jinfo)
+static int count_queue_group_procs(queue_info *qinfo, JobInfo *jinfo)
   {
   int procs = 0;  /* the accumulator to count the user's jobs */
 
   for (int i = 0; i < qinfo->sc.running; i++)
     {
-    if (!strcmp(jinfo->group, qinfo->running_jobs[i]->group))
+    if (jinfo->group == qinfo->running_jobs[i]->group)
       {
-      pars_spec *spec = parse_nodespec(qinfo->running_jobs[i]->nodespec);
+      pars_spec *spec = parse_nodespec(qinfo->running_jobs[i]->nodespec.c_str());
       procs += spec->total_procs;
       free_parsed_nodespec(spec);
       }
@@ -553,7 +551,7 @@ static int count_queue_group_procs(queue_info *qinfo, job_info *jinfo)
  *  CROSS_DED_TIME_BOUNDRY: will cross a ded time boundry
  *
  */
-int check_ded_time_boundry(job_info *jinfo)
+int check_ded_time_boundry(JobInfo *jinfo)
   {
   resource_req *res;  /* used to get jobs walltime request */
   sch_resource_t finish_time; /* the finish time of the job */
@@ -670,7 +668,7 @@ int check_server_max_run(server_info *sinfo)
 int check_ignored(queue_info *qinfo)
 {
   int i;
-  
+
   /* check if the queue is ignored */
   for (i = 0; i < MAX_IGNORED_QUEUES; i++)
     if (!strcmp(qinfo->name,conf.ignored_queues[i]))

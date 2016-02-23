@@ -6,7 +6,7 @@
 enum ResourceType { ResourceStatic, ResourceDynamic, ResourceString };
 
 namespace Scheduler {
-namespace Base {
+namespace Core {
 
 class Resource
   {

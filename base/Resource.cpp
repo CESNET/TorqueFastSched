@@ -5,7 +5,7 @@
 
 using namespace std;
 using namespace Scheduler;
-using namespace Base;
+using namespace Core;
 
 Resource::Resource(const string& name) : p_res_type(ResourceStatic), p_name(name), p_str_val(), p_avail(UNSPECIFIED), p_max(INFINITY), p_assign(UNSPECIFIED) {}
 

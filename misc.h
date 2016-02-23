@@ -129,7 +129,7 @@ unsigned string_array_verify(char **sa1, char **sa2);
 /*
  *      calc_time_left - calculate the remaining time of a job
  */
-int calc_time_left(job_info *jinfo);
+int calc_time_left(JobInfo *jinfo);
 
 /*
  *      cstrcmp - check string compare - compares two strings but doesn't bomb
@@ -146,7 +146,7 @@ void query_external_cache(server_info *sinfo, int dynamic);
 int is_num(const char* value);
 
 /** check the validity of a cloud request */
-int cloud_check(job_info *jinfo);
+int cloud_check(JobInfo *jinfo);
 
 /** find bootable alternatives for nodes */
 void find_bootable_alternatives(server_info *sinfo);

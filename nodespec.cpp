@@ -20,7 +20,7 @@ extern "C" {
 #include "base/PropRegistry.h"
 #include "base/MiscHelpers.h"
 using namespace Scheduler;
-using namespace Base;
+using namespace Core;
 
 #include <sstream>
 #include <cassert>
@@ -31,7 +31,7 @@ using namespace Base;
 #include <stdexcept>
 using namespace std;
 
-static int assign_node(job_info *jinfo, pars_spec_node *spec, const vector<node_info*>& suitable_nodes)
+static int assign_node(JobInfo *jinfo, pars_spec_node *spec, const vector<node_info*>& suitable_nodes)
   {
   ScratchType scratch = ScratchNone;
   int fit_occupied = 0;
@@ -63,7 +63,7 @@ static int assign_node(job_info *jinfo, pars_spec_node *spec, const vector<node_
       }
 
     suitable_nodes[i]->set_assignment(spec);
-    if (jinfo->is_exclusive) // allocate all processors and memory, when job is exclusive
+    if (jinfo->is_exclusive()) // allocate all processors and memory, when job is exclusive
       {
       suitable_nodes[i]->get_assignment()->procs = suitable_nodes[i]->get_cores_total();
       suitable_nodes[i]->get_assignment()->mem   = suitable_nodes[i]->get_mem_total();
@@ -80,12 +80,12 @@ static int assign_node(job_info *jinfo, pars_spec_node *spec, const vector<node_
     return 0;
     }
 
-  sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->name, "Nodespec not matched: %d suitable, %d occupied.", suitable_nodes.size(), fit_occupied);
+  sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), "Nodespec not matched: %d suitable, %d occupied.", suitable_nodes.size(), fit_occupied);
   return 1;
   }
 
 
-static int ondemand_reboot(job_info *jinfo, pars_spec_node *spec, const vector<node_info*>& suitable_nodes)
+static int ondemand_reboot(JobInfo *jinfo, pars_spec_node *spec, const vector<node_info*>& suitable_nodes)
   {
   ScratchType scratch = ScratchNone;
   int fit_occupied = 0;
@@ -120,7 +120,7 @@ static int ondemand_reboot(job_info *jinfo, pars_spec_node *spec, const vector<n
     return 0;
     }
 
-  sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->name, "Nodespec not matched: %d suitable, %d occupied.", suitable_nodes.size(), fit_occupied);
+  sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), "Nodespec not matched: %d suitable, %d occupied.", suitable_nodes.size(), fit_occupied);
   return 1;
   }
 
@@ -181,7 +181,7 @@ static pars_spec_node* merge_node_specs(pars_spec_node *first, pars_spec_node *s
   }
 
 
-static int assign_all_nodes(job_info *jinfo, pars_spec_node *spec, const vector<node_info*>& nodes)
+static int assign_all_nodes(JobInfo *jinfo, pars_spec_node *spec, const vector<node_info*>& nodes)
   {
   int starving = 0;
 
@@ -218,7 +218,7 @@ static int assign_all_nodes(job_info *jinfo, pars_spec_node *spec, const vector<
   }
 #endif
 
-CheckResult try_assign_nodes(job_info *jinfo, pars_spec_node *spec, const vector<node_info*>& run_nodes, const vector<node_info*>& boot_nodes)
+CheckResult try_assign_nodes(JobInfo *jinfo, pars_spec_node *spec, const vector<node_info*>& run_nodes, const vector<node_info*>& boot_nodes)
   {
   for (unsigned i = 0; i < spec->node_count; i++)
     {
@@ -253,7 +253,7 @@ CheckResult try_assign_nodes(job_info *jinfo, pars_spec_node *spec, const vector
   return CheckAvailable;
   }
 
-CheckResult try_assign_spec(job_info *jinfo, const vector<node_info*>& nodes)
+CheckResult try_assign_spec(JobInfo *jinfo, const vector<node_info*>& nodes)
   {
   CheckResult result = CheckAvailable;
   pars_spec_node *iter = jinfo->parsed_nodespec->nodes;
@@ -294,11 +294,11 @@ CheckResult try_assign_spec(job_info *jinfo, const vector<node_info*>& nodes)
   return result;
   }
 
-CheckResult find_nodes(job_info *jinfo, const vector<node_info*>& nodes)
+CheckResult find_nodes(JobInfo *jinfo, const vector<node_info*>& nodes)
   {
   CheckResult result = CheckNonFit;
 
-  if (jinfo->placement != NULL)
+  if (jinfo->placement.size() != 0)
     {
     pair<bool,size_t> reg = get_prop_registry()->get_property_id(jinfo->placement);
     if (!reg.first)
@@ -339,7 +339,7 @@ CheckResult find_nodes(job_info *jinfo, const vector<node_info*>& nodes)
   return result;
   }
 
-int check_nodespec(server_info *sinfo, job_info *jinfo, int nodecount, node_info **ninfo_arr, int preassign_starving)
+int check_nodespec(server_info *sinfo, JobInfo *jinfo, int nodecount, node_info **ninfo_arr, int preassign_starving)
   {
   vector<node_info*> nodes(&ninfo_arr[0],&ninfo_arr[nodecount]);
 
@@ -366,7 +366,7 @@ int check_nodespec(server_info *sinfo, job_info *jinfo, int nodecount, node_info
     nodes_preassign_clean(ninfo_arr,nodecount);
     jinfo->schedule.clear();
 
-    if (jinfo->is_starving) /* if starving, eat out the resources anyway */
+    if (jinfo->is_starving()) /* if starving, eat out the resources anyway */
       {
       // expand virtual nodes;
       vector<node_info*> virtual_nodes;
@@ -431,7 +431,7 @@ void nodes_preassign_clean(const vector<node_info*>& nodes)
  *
  * @note Expects a valid node info
  */
-static void get_target_full(stringstream& s, job_info *jinfo, node_info *ninfo, bool cluster)
+static void get_target_full(stringstream& s, JobInfo *jinfo, node_info *ninfo, bool cluster)
   {
   assert(jinfo != NULL || ninfo != NULL);
 
@@ -449,7 +449,7 @@ static void get_target_full(stringstream& s, job_info *jinfo, node_info *ninfo, 
  * @param ninfo_arr List of nodes to parse
  * @return Allocated string containing the targets
  */
-char* nodes_preassign_string(job_info *jinfo, node_info **ninfo_arr, int count, int &booting, double &minspec)
+char* nodes_preassign_string(JobInfo *jinfo, node_info **ninfo_arr, int count, int &booting, double &minspec)
   {
   stringstream s;
   bool cluster = false;
@@ -488,7 +488,7 @@ char* nodes_preassign_string(job_info *jinfo, node_info **ninfo_arr, int count, 
         minspec = min(minspec,jinfo->schedule[i]->get_node_spec());
     }
 
-  if (jinfo->is_exclusive)
+  if (jinfo->is_exclusive())
     s << "#excl";
 
   return strdup(s.str().c_str());

@@ -112,7 +112,7 @@ using namespace std;
  * returns pointer to the head of a list of jobs
  *
  */
-job_info **query_jobs(int pbs_sd, queue_info *qinfo)
+JobInfo **query_jobs(int pbs_sd, queue_info *qinfo)
   {
   /* pbs_selstat() takes a linked list of attropl structs which tell it
    * what information about what jobs to return.  We want all jobs which are
@@ -133,10 +133,10 @@ job_info **query_jobs(int pbs_sd, queue_info *qinfo)
   struct batch_status *cur_job;
 
   /* array of internal scheduler structures for jobs */
-  job_info **jinfo_arr;
+  JobInfo **jinfo_arr;
 
   /* current job in jinfo_arr array */
-  job_info *jinfo;
+  JobInfo *jinfo;
 
   /* number of jobs in jinfo_arr */
   int num_jobs = 0;
@@ -161,7 +161,7 @@ job_info **query_jobs(int pbs_sd, queue_info *qinfo)
     }
 
   /* allocate enough space for all the jobs and the NULL sentinal */
-  if ((jinfo_arr = (job_info **) malloc(sizeof(job_info*) * (num_jobs + 1))) == NULL)
+  if ((jinfo_arr = (JobInfo **) malloc(sizeof(JobInfo*) * (num_jobs + 1))) == NULL)
     {
     perror("Memory allocation error");
     pbs_statfree(jobs);
@@ -172,7 +172,7 @@ job_info **query_jobs(int pbs_sd, queue_info *qinfo)
 
   for (i = 0; cur_job != NULL; i++)
     {
-    if ((jinfo = query_job_info(cur_job, qinfo)) == NULL)
+    if ((jinfo = new JobInfo(cur_job,qinfo)) == NULL)
       {
       pbs_statfree(jobs);
       free_jobs(jinfo_arr);
@@ -180,17 +180,14 @@ job_info **query_jobs(int pbs_sd, queue_info *qinfo)
       }
 
     /* get the fair share group info node */
-    if (jinfo -> account != NULL)
-      {
-      Scheduler::Logic::FairshareTree &tmp = get_tree(jinfo->queue->fairshare_tree);
-      jinfo -> ginfo = tmp.find_alloc_ginfo(jinfo -> account);
-      }
+    Scheduler::Logic::FairshareTree &tmp = get_tree(jinfo->queue->fairshare_tree);
+    jinfo -> ginfo = tmp.find_alloc_ginfo(jinfo -> account.c_str());
 
     /* if the job is not in the queued state, don't even allow
      * it to be considered to be run.
      */
     if (jinfo -> state != JobQueued)
-      jinfo -> can_not_run = 1;
+      jinfo -> can_not_run = true;
 
     jinfo_arr[i] = jinfo;
 
@@ -202,215 +199,6 @@ job_info **query_jobs(int pbs_sd, queue_info *qinfo)
   pbs_statfree(jobs);
 
   return jinfo_arr;
-  }
-
-/*
- *
- * query_job_info - takes info from a batch_status about a job and
- *    converts it into a job_info struct
- *
- *   job - batch_status struct of job
- *   qinfo - queue where job resides
- *
- * returns job_info struct
- */
-
-job_info *query_job_info(struct batch_status *job, queue_info *queue)
-  {
-  job_info *jinfo;  /* converted job */
-
-  struct attrl *attrp;  /* list of attributes returned from server */
-  int count;   /* int used in string -> int conversion */
-  char *endp;   /* used for strtol() */
-  resource_req *resreq;  /* resource_req list for resources requested  */
-
-  if ((jinfo = new_job_info()) == NULL)
-    return NULL;
-
-  jinfo -> name = strdup(job -> name);
-
-  attrp = job -> attribs;
-
-  jinfo -> queue = queue;
-
-  while (attrp != NULL)
-    {
-    if (!strcmp(attrp -> name, ATTR_name))
-      jinfo -> custom_name = strdup(attrp -> value);
-    else if (!strcmp(attrp -> name, ATTR_p))   /* priority */
-      {
-      count = strtol(attrp -> value, &endp, 10);
-
-      if (*endp != '\n')
-        jinfo -> priority = count;
-      else
-        jinfo -> priority = -1;
-      }
-    else if (!strcmp(attrp -> name, ATTR_qtime))  /* queue time */
-      {
-      count = strtol(attrp -> value, &endp, 10);
-
-      if (*endp != '\n')
-        jinfo -> qtime = count;
-      else
-        jinfo -> qtime = -1;
-      }
-    else if (!strcmp(attrp -> name, ATTR_start_time))
-      {
-      count = strtol(attrp -> value, &endp, 10);
-
-      if (*endp != '\n')
-        jinfo -> stime = count;
-      else
-        jinfo -> stime = -1;
-      }
-    else if (!strcmp(attrp -> name, ATTR_state))   /* state of job */
-      set_state(attrp -> value, jinfo);
-    else if (!strcmp(attrp -> name, ATTR_comment))   /* job comment */
-      jinfo -> comment = strdup(attrp -> value);
-    else if (!strcmp(attrp -> name, ATTR_euser))    /* account name */
-      jinfo -> account = strdup(attrp -> value);
-    else if (!strcmp(attrp -> name, ATTR_egroup))    /* group name */
-      jinfo -> group = strdup(attrp -> value);
-    else if (!strcmp(attrp -> name, ATTR_fairshare_cost))
-      jinfo -> calculated_fairshare = atof(attrp->value);
-    else if (!strcmp(attrp -> name, ATTR_schedspec))
-      jinfo -> sched_nodespec = attrp -> value;
-    else if (!strcmp(attrp -> name, ATTR_planned_nodes))
-      jinfo -> p_planned_nodes = attrp -> value;
-    else if (!strcmp(attrp -> name, ATTR_waiting_for))
-      jinfo -> p_waiting_for = attrp -> value;
-    else if (!strcmp(attrp -> name, ATTR_planned_start))
-      {
-      count = strtol(attrp -> value, &endp, 10);
-
-      if (*endp != '\n')
-        jinfo -> p_planned_start = count;
-      else
-        jinfo -> p_planned_start = -1;
-      }
-    else if (!strcmp(attrp -> name, ATTR_l))    /* resources requested*/
-      {
-      /* special handling for cluster */
-      if (strcmp(attrp->resource,"cluster") == 0)
-        {
-        if (strcmp(attrp->value,"create") == 0)
-          {
-          jinfo->cluster_mode = ClusterCreate;
-          }
-        else
-          {
-          jinfo->cluster_mode = ClusterUse;
-          jinfo->cluster_name = strdup(attrp->value);
-          }
-        }
-      else if (strcmp(attrp->resource,"processed_nodes") == 0)
-        {
-        jinfo->nodespec = strdup(attrp->value);
-        }
-      else if (strcmp(attrp->resource,"place") == 0)
-        {
-        jinfo->placement = strdup(attrp->value);
-        }
-      }
-    else if (!strcmp(attrp -> name, ATTR_total_resources))
-      {
-      resreq = find_alloc_resource_req(attrp -> resource, jinfo -> resreq);
-
-      if (resreq != NULL)
-        {
-        resreq -> res_str = strdup(attrp -> value);
-        resreq -> amount = res_to_num(attrp -> value);
-        }
-
-      if (jinfo -> resreq == NULL)
-        jinfo -> resreq = resreq;
-      }
-    else if (!strcmp(attrp -> name, ATTR_used))    /* resources used */
-      {
-      resreq = find_alloc_resource_req(attrp -> resource, jinfo -> resused);
-
-      if (resreq != NULL)
-        resreq -> amount = res_to_num(attrp -> value);
-
-      if (jinfo -> resused == NULL)
-        jinfo -> resused = resreq;
-      }
-
-    attrp = attrp -> next;
-    }
-
-  if (jinfo -> state == JobQueued &&
-      jinfo->queue->starving_support >= 0 &&
-      jinfo->qtime + jinfo->queue->starving_support < cstat.current_time)
-    jinfo->is_starving = 1;
-
-  return jinfo;
-  }
-
-/*
- *
- * new_job_info  - allocate and initialize new job_info structure
- *
- * returns new job_info structure
- *
- */
-job_info *new_job_info()
-  {
-  job_info *jinfo;
-
-  if ((jinfo = new (nothrow) job_info) == NULL)
-    return NULL;
-
-  jinfo -> state = JobNoState;
-
-  jinfo -> is_starving = 0;
-
-  jinfo -> can_not_run = 0;
-
-  jinfo -> can_never_run = 0;
-
-  jinfo -> is_exclusive = 0;
-  jinfo -> is_multinode = 0;
-
-  jinfo -> name = NULL;
-
-  jinfo -> comment = NULL;
-
-  jinfo -> account = NULL;
-
-  jinfo -> group = NULL;
-
-  jinfo -> queue = NULL;
-
-  jinfo -> priority = 0;
-
-  jinfo -> sch_priority = 0;
-
-  jinfo -> qtime = 0;
-
-  jinfo -> resreq = NULL;
-
-  jinfo -> resused = NULL;
-
-  jinfo -> ginfo = NULL;
-
-  jinfo -> custom_name = NULL;
-
-    jinfo -> cluster_mode = ClusterNone;
-  jinfo -> cluster_name = NULL;
-
-  jinfo -> nodespec = NULL;
-
-  jinfo -> parsed_nodespec = NULL;
-
-  jinfo -> calculated_fairshare = -1;
-
-  jinfo -> placement = NULL;
-
-  jinfo -> p_planned_start = -1;
-
-  return jinfo;
   }
 
 /*
@@ -480,32 +268,6 @@ resource_req *find_alloc_resource_req(char *name, resource_req *reqlist)
 
 /*
  *
- * free_job_info - free all the memory used by a job_info structure
- *
- *   jinfo - the job_info to free
- *
- * returns nothing
- *
- */
-
-void free_job_info(job_info *jinfo)
-  {
-  free(jinfo -> name);
-  free(jinfo -> custom_name);
-  free(jinfo -> comment);
-  free(jinfo -> account);
-  free(jinfo -> group);
-  free_resource_req_list(jinfo -> resreq);
-  free_resource_req_list(jinfo -> resused);
-  free(jinfo -> cluster_name);
-  free(jinfo -> nodespec);
-  free_parsed_nodespec(jinfo -> parsed_nodespec);
-  free(jinfo -> placement);
-  delete jinfo;
-  }
-
-/*
- *
  * free_jobs - free an array of jobs
  *
  *   jarr - array of jobs to free
@@ -514,7 +276,7 @@ void free_job_info(job_info *jinfo)
  *
  */
 
-void free_jobs(job_info **jarr)
+void free_jobs(JobInfo **jarr)
   {
   int i;
 
@@ -522,7 +284,7 @@ void free_jobs(job_info **jarr)
     return;
 
   for (i = 0; jarr[i] != NULL; i++)
-    free_job_info(jarr[i]);
+    delete jarr[i];
 
   free(jarr);
   }
@@ -645,65 +407,6 @@ void free_resource_req_list(resource_req *list)
 
 /*
  *
- * print_job_info - print out a job_info struct
- *
- *   jinfo - the job to print
- *   brief - only print job name
- *
- * returns nothing
- *
- */
-void print_job_info(job_info *jinfo, char brief)
-  {
-  resource_req *resreq;   /* used to print the resources */
-
-  if (jinfo == NULL)
-    return;
-
-  if (jinfo -> name != NULL)
-    printf("%sJob Name: %s\n", brief ? "      " : "", jinfo -> name);
-
-  if (!brief)
-    {
-    if (jinfo -> comment != NULL)
-      printf("comment: %s\n", jinfo -> comment);
-
-    if (jinfo -> queue != NULL)
-      printf("queue: %s\n", jinfo -> queue -> name);
-
-    if (jinfo -> account)
-      printf("account: %s\n", jinfo -> account);
-
-    if (jinfo -> group)
-      printf("group: %s\n", jinfo -> group);
-
-    printf("priority: %d\n", jinfo -> priority);
-
-    printf("sch_priority: %d\n", jinfo -> sch_priority);
-
-    printf("qtime: %d: %s", (int)jinfo -> qtime, ctime(&(jinfo -> qtime)));
-
-    printf("state: %s", jinfo->state_string());
-
-    printf("is_starving: %s\n", jinfo -> is_starving ? "TRUE" : "FALSE");
-
-    printf("can_not_run: %s\n", jinfo -> can_not_run ? "TRUE" : "FALSE");
-
-    printf("can_never_run: %s\n", jinfo -> can_never_run ? "TRUE" : "FALSE");
-
-    resreq = jinfo -> resreq;
-
-    while (resreq != NULL)
-      {
-      printf("resreq %s %lld\n", resreq -> name, resreq -> amount);
-      resreq = resreq -> next;
-      }
-    }
-  }
-
-
-/*
- *
  * set_state - set the state flag in a job_info structure
  *   i.e. the is_* bit
  *
@@ -713,7 +416,7 @@ void print_job_info(job_info *jinfo, char brief)
  * returns nothing
  *
  */
-void set_state(char *state, job_info *jinfo)
+void set_state(char *state, JobInfo *jinfo)
   {
   switch (state[0])
     {
@@ -766,7 +469,7 @@ void set_state(char *state, job_info *jinfo)
  * returns nothing
  *
  */
-void update_job_on_run(int UNUSED(pbs_sd), job_info *jinfo)
+void update_job_on_run(int UNUSED(pbs_sd), JobInfo *jinfo)
   {
   jinfo -> state = JobRunning;
   }
@@ -778,7 +481,7 @@ void update_job_on_run(int UNUSED(pbs_sd), job_info *jinfo)
  *
  * @param jinfo Job info to be modified
  */
-void update_job_on_move(job_info *jinfo)
+void update_job_on_move(JobInfo *jinfo)
   {
   jinfo -> state = JobCrossRun;
   }
@@ -796,7 +499,7 @@ void update_job_on_move(job_info *jinfo)
  *   non-zero: the comment did not need to be updated (same as before etc)
  *
  */
-int update_job_comment(int pbs_sd, job_info *jinfo, const char *comment)
+int update_job_comment(int pbs_sd, JobInfo *jinfo, const char *comment)
   {
   /* the pbs_alterjob() call takes a linked list of attrl structures to alter
    * a job.  All we are interested in doing is changing the comment.
@@ -811,16 +514,13 @@ int update_job_comment(int pbs_sd, job_info *jinfo, const char *comment)
     return 1;
 
   /* no need to update the job comment if it is the same */
-  if (jinfo -> comment == NULL || strcmp(jinfo -> comment, comment))
+  if (jinfo->comment != comment)
     {
-    if (jinfo -> comment != NULL)
-      free(jinfo -> comment);
+    jinfo->comment = comment;
 
-    jinfo -> comment = strdup(comment);
+    attr.value = const_cast<char*>(comment);
 
-    attr.value = (char*)comment;
-
-    pbs_alterjob(pbs_sd, jinfo -> name, &attr, NULL);
+    pbs_alterjob(pbs_sd, const_cast<char*>(jinfo -> job_id.c_str()), &attr, NULL);
 
     return 0;
     }
@@ -828,7 +528,7 @@ int update_job_comment(int pbs_sd, job_info *jinfo, const char *comment)
   return 1;
   }
 
-int update_job_planned_nodes(int pbs_sd, job_info *jinfo, const std::string& nodes)
+int update_job_planned_nodes(int pbs_sd, JobInfo *jinfo, const std::string& nodes)
   {
   struct attrl attr =
     {
@@ -842,13 +542,13 @@ int update_job_planned_nodes(int pbs_sd, job_info *jinfo, const std::string& nod
     {
     attr.value = (char*)nodes.c_str();
 
-    return pbs_alterjob(pbs_sd, jinfo -> name, &attr, NULL);
+    return pbs_alterjob(pbs_sd, const_cast<char*>(jinfo -> job_id.c_str()), &attr, NULL);
     }
 
   return 0;
   }
 
-int update_job_waiting_for(int pbs_sd, job_info *jinfo, const std::string& waiting)
+int update_job_waiting_for(int pbs_sd, JobInfo *jinfo, const std::string& waiting)
   {
   struct attrl attr =
     {
@@ -862,13 +562,13 @@ int update_job_waiting_for(int pbs_sd, job_info *jinfo, const std::string& waiti
     {
     attr.value = (char*)waiting.c_str();
 
-    return pbs_alterjob(pbs_sd, jinfo -> name, &attr, NULL);
+    return pbs_alterjob(pbs_sd, const_cast<char*>(jinfo -> job_id.c_str()), &attr, NULL);
     }
 
   return 0;
   }
 
-int update_job_earliest_start(int pbs_sd, job_info *jinfo, time_t earliest_start)
+int update_job_earliest_start(int pbs_sd, JobInfo *jinfo, time_t earliest_start)
   {
   struct attrl attr =
     {
@@ -885,13 +585,13 @@ int update_job_earliest_start(int pbs_sd, job_info *jinfo, time_t earliest_start
     sprintf(value,"%ld",earliest_start);
     attr.value = value;
 
-    return pbs_alterjob(pbs_sd, jinfo -> name, &attr, NULL);
+    return pbs_alterjob(pbs_sd, const_cast<char*>(jinfo -> job_id.c_str()), &attr, NULL);
     }
 
   return 0;
   }
 
-int update_job_fairshare(int pbs_sd, job_info *jinfo, double fairshare)
+int update_job_fairshare(int pbs_sd, JobInfo *jinfo, double fairshare)
   {
   /* the pbs_alterjob() call takes a linked list of attrl structures to alter
    * a job.  All we are interested in doing is changing the comment.
@@ -910,7 +610,7 @@ int update_job_fairshare(int pbs_sd, job_info *jinfo, double fairshare)
   sprintf(value,"%.3f",fairshare);
   attr.value = value;
 
-  pbs_alterjob(pbs_sd, jinfo -> name, &attr, NULL);
+  pbs_alterjob(pbs_sd, const_cast<char*>(jinfo -> job_id.c_str()), &attr, NULL);
 
   return 0;
   }
@@ -927,7 +627,7 @@ int update_job_fairshare(int pbs_sd, job_info *jinfo, double fairshare)
  * returns nothing;
  *
  */
-void update_jobs_cant_run(int pbs_sd, job_info **jinfo_arr, job_info *start,
+void update_jobs_cant_run(int pbs_sd, JobInfo **jinfo_arr, JobInfo *start,
                           const char *comment, int start_where)
   {
   int i = 0;
@@ -954,7 +654,7 @@ void update_jobs_cant_run(int pbs_sd, job_info **jinfo_arr, job_info *start,
 
       for (; jinfo_arr[i] != NULL; i++)
         {
-        jinfo_arr[i] -> can_not_run = 1;
+        jinfo_arr[i] -> can_not_run = true;
         update_job_comment(pbs_sd, jinfo_arr[i], comment);
         }
       }
@@ -979,13 +679,13 @@ void update_jobs_cant_run(int pbs_sd, job_info **jinfo_arr, job_info *start,
  * filter_func prototype: int func( job_info *, void * )
  *
  */
-job_info **job_filter(job_info** jobs, int size,
-                      int (*filter_func)(job_info*, void*), void *arg)
+JobInfo **job_filter(JobInfo** jobs, int size,
+                      int (*filter_func)(JobInfo*, void*), void *arg)
   {
-  job_info **new_jobs = NULL;   /* new array of jobs */
+  JobInfo **new_jobs = NULL;   /* new array of jobs */
   int i, j = 0;
 
-  if ((new_jobs = (job_info**)malloc((size + 1) * sizeof(job_info *))) == NULL)
+  if ((new_jobs = (JobInfo**)malloc((size + 1) * sizeof(JobInfo *))) == NULL)
     {
     perror("Memory allocation error");
     return NULL;
@@ -1000,7 +700,7 @@ job_info **job_filter(job_info** jobs, int size,
       }
     }
 
-  if ((new_jobs = (job_info**) realloc(new_jobs, (j + 1) * sizeof(job_info *))) == NULL)
+  if ((new_jobs = (JobInfo**) realloc(new_jobs, (j + 1) * sizeof(JobInfo *))) == NULL)
     {
     perror("Memory Allocation Error");
     return NULL;
@@ -1096,7 +796,7 @@ int translate_job_fail_code(int fail_code, char *comment_msg, char *log_msg)
 
       case JOB_STARVING:
         strcpy(comment_msg, COMMENT_JOB_STARVING);
-        sprintf(log_msg, INFO_JOB_STARVING, cstat.starving_job -> name);
+        sprintf(log_msg, INFO_JOB_STARVING, cstat.starving_job -> job_id.c_str());
         break;
 
       case SCHD_ERROR:

@@ -4,7 +4,7 @@
 using namespace std;
 using namespace boost;
 using namespace Scheduler;
-using namespace Base;
+using namespace Core;
 
 boost::shared_ptr<Resource> ResourceSet::get_resource(const string& name) const
   {

@@ -87,17 +87,17 @@
 /*
  *      query_jobs - create an array of jobs in a specified queue
  */
-job_info **query_jobs(int pbs_sd, queue_info *qinfo);
+JobInfo **query_jobs(int pbs_sd, queue_info *qinfo);
 
 /*
  * query_job_info - takes info from a batch_status about a job and puts
  */
-job_info *query_job_info(struct batch_status *job, queue_info *qinfo);
+JobInfo *query_job_info(struct batch_status *job, queue_info *qinfo);
 
 /*
  * new_job_info  - allocate and initialize new job_info structure
  */
-job_info *new_job_info();
+JobInfo *new_job_info();
 
 /*
  * find_resource_req - find a resource_req from a resource_req list
@@ -124,25 +124,25 @@ resource_req *clone_resource_req_list(resource_req *list);
  * free_job_info - free all the memory used by a job_info structure
  */
 
-void free_job_info(job_info *jinfo);
+void free_job_info(JobInfo *jinfo);
 
 /*
  * free_jobs - free an array of jobs
  */
 
-void free_jobs(job_info **jarr);
+void free_jobs(JobInfo **jarr);
 
 /*
  *      print_job_info - print out a job_info struct
  */
 
-void print_job_info(job_info *jinfo, char brief);
+void print_job_info(JobInfo *jinfo, char brief);
 
 /*
  *      set_state - set the state flag in a job_info structure
  *                      i.e. the is_* bit
  */
-void set_state(char *state, job_info *jinfo);
+void set_state(char *state, JobInfo *jinfo);
 
 /** Update the job information
  *
@@ -151,27 +151,27 @@ void set_state(char *state, job_info *jinfo);
  *
  * @param jinfo Job info to be modified
  */
-void update_job_on_move(job_info *jinfo);
+void update_job_on_move(JobInfo *jinfo);
 
 /*
  *      update_job_on_run - update job information kept in a job_info
  *                              when a job is run
  */
-void update_job_on_run(int pbs_sd, job_info *jinfo);
+void update_job_on_run(int pbs_sd, JobInfo *jinfo);
 
 /*
  *      update_job_comment - update a jobs comment attribute
  */
-int update_job_comment(int pbs_sd, job_info *jinfo, const char *comment);
-int update_job_planned_nodes(int pbs_sd, job_info *jinfo, const std::string& nodes);
-int update_job_waiting_for(int pbs_sd, job_info *jinfo, const std::string& waiting);
-int update_job_earliest_start(int pbs_sd, job_info *jinfo, time_t earliest_start);
-int update_job_fairshare(int pbs_sd, job_info *jinfo, double fairshare);
+int update_job_comment(int pbs_sd, JobInfo *jinfo, const char *comment);
+int update_job_planned_nodes(int pbs_sd, JobInfo *jinfo, const std::string& nodes);
+int update_job_waiting_for(int pbs_sd, JobInfo *jinfo, const std::string& waiting);
+int update_job_earliest_start(int pbs_sd, JobInfo *jinfo, time_t earliest_start);
+int update_job_fairshare(int pbs_sd, JobInfo *jinfo, double fairshare);
 
 /*
  *      update_jobs_cant_run - update an array of jobs which can not run
  */
-void update_jobs_cant_run(int pbs_sd, job_info **jinfo_arr, job_info *start,
+void update_jobs_cant_run(int pbs_sd, JobInfo **jinfo_arr, JobInfo *start,
                           const char *comment, int start_where);
 
 /*
@@ -179,8 +179,8 @@ void update_jobs_cant_run(int pbs_sd, job_info **jinfo_arr, job_info *start,
  * NOTE: this function allocates a new array
  * filter_func prototype: int func( job_info *, void * )
  */
-job_info **job_filter(job_info** jobs, int size,
-                      int (*filter_func)(job_info*, void*), void *arg);
+JobInfo **job_filter(JobInfo** jobs, int size,
+                      int (*filter_func)(JobInfo*, void*), void *arg);
 
 /*
  *      free_resource_req_list - frees memory used by a resource_req list
@@ -196,6 +196,6 @@ int translate_job_fail_code(int fail_code, char *comment_msg, char *log_msg);
 /*
  *      calc_assn_resource - calcualte the assigned resource in a job array
  */
-int calc_assn_resource(job_info **jinfo_arr, const char *resstr);
+int calc_assn_resource(JobInfo **jinfo_arr, const char *resstr);
 
 #endif

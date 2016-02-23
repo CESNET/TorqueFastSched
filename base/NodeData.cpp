@@ -18,7 +18,7 @@ using namespace std;
 using namespace boost;
 
 namespace Scheduler {
-namespace Base {
+namespace Core {
 
 NodeData::NodeData(struct batch_status *node_data) :  p_phys_props(), p_virt_props(), p_priority(0), p_type(NodeCluster),
                         p_no_multinode(false), p_ded_queue_name(), p_admin_slot_enabled(false),
