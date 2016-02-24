@@ -33,7 +33,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdexcept>
 using namespace std;
 
-extern "C"{
+extern "C" {
 #include "legacy/server_limits.h"
 #include "legacy/libpbs.h"
 

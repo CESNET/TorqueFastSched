@@ -59,10 +59,6 @@ JobInfo::JobInfo(struct batch_status *job, queue_info *queue) : job_id(),
       {
       this->comment = attrp->value;
       }
-    else if (strcmp(attrp->resource,"processed_nodes") == 0)
-      {
-      this->nodespec = attrp->value;
-      }
     else if (!strcmp(attrp -> name, ATTR_qtime))
       {
       count = strtol(attrp -> value, &endp, 10);
@@ -127,6 +123,10 @@ JobInfo::JobInfo(struct batch_status *job, queue_info *queue) : job_id(),
           this->cluster_mode = ClusterUse;
           this->cluster_name = attrp->value;
           }
+        }
+      else if (strcmp(attrp->resource,"processed_nodes") == 0)
+        {
+        this->nodespec = attrp->value;
         }
       else if (strcmp(attrp->resource,"place") == 0)
         {
