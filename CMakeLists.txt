@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(torque-fast-sched VERSION 1.0.0)
+project(torque-fast-sched VERSION 1.0.1)
 
 find_file(HAVE_PBS_CACHE_API_H pbs_cache_api.h /usr/include)
 if(NOT HAVE_PBS_CACHE_API_H)
