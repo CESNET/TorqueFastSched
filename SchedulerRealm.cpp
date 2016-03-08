@@ -22,7 +22,7 @@ extern "C" {
 #include "dis.h"
 }
 
-#include "RescInfoDb.h"
+#include "SchedulerCore_RescInfoDb.h"
 #include "SchedulerCore_ConnectionMgr.h"
 
 extern void dump_current_fairshare(group_info *root);
@@ -184,13 +184,13 @@ void World::update_fairshare()
         if (jobs[j]->calculated_fairshare != 0)
           {
           user -> usage += (calculate_usage_value(jobs[j] -> resused) -
-                           calculate_usage_value(p_last_running[i].resused))*jobs[j]->calculated_fairshare;
+            calculate_usage_value(p_last_running[i].resused) + 5*60)*jobs[j]->calculated_fairshare;
           }
         else
           {
           resource_req *tmp = find_resource_req(jobs[j]->resreq, "procs");
           user -> usage += (calculate_usage_value(jobs[j] -> resused) -
-              calculate_usage_value(p_last_running[i].resused))*tmp->amount;
+            calculate_usage_value(p_last_running[i].resused) + 5*60)*tmp->amount;
           }
         }
       }

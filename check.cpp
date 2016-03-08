@@ -92,7 +92,7 @@
 #include "constant.h"
 #include "globals.h"
 #include "dedtime.h"
-#include "RescInfoDb.h"
+#include "SchedulerCore_RescInfoDb.h"
 #include "base/PropRegistry.h"
 
 using namespace Scheduler;
@@ -186,12 +186,6 @@ int is_ok_to_run_job(server_info *sinfo, queue_info *qinfo,
     {
     node_info *slave = debug->get_slave_nodes()[0].get();
     (void)slave;
-    }
-
-  if ((rc = jinfo->preprocess()) != SUCCESS)
-    {
-    sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), "Couldn't process jobs nodespec.");
-    return rc;
     }
 
   if ((rc = check_server_max_run(sinfo)))

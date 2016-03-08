@@ -1,6 +1,6 @@
 #include "NodeLogic.h"
 #include "JobInfo.h"
-#include "RescInfoDb.h"
+#include "SchedulerCore_RescInfoDb.h"
 #include "base/MiscHelpers.h"
 
 #include <map>

@@ -1,4 +1,4 @@
-#include "RescInfoDb.h"
+#include "SchedulerCore_RescInfoDb.h"
 
 
 #include <boost/property_tree/ptree.hpp>
@@ -6,6 +6,9 @@
 using namespace boost::property_tree;
 using namespace boost::property_tree::info_parser;
 using namespace std;
+
+namespace Scheduler {
+namespace Core {
 
 // global resource information database
 RescInfoDb resc_info_db;
@@ -72,3 +75,5 @@ pair<RescInfoDb::iterator,bool> RescInfoDb::insert(const char *name, const char 
   i.source = source;
   return p_resources.insert(make_pair(i.name,i));
   }
+
+}}

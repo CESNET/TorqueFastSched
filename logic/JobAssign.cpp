@@ -4,10 +4,12 @@
 #include <cstdlib>
 using namespace std;
 
-#include "RescInfoDb.h"
+#include "SchedulerCore_RescInfoDb.h"
 
 namespace Scheduler {
 namespace Logic {
+
+using namespace Scheduler::Core;
 
 bool JobAssign::has_virtual_assignment() const
   {

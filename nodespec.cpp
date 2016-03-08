@@ -13,7 +13,7 @@ extern "C" {
 
 #include "api.hpp"
 
-#include "RescInfoDb.h"
+#include "SchedulerCore_RescInfoDb.h"
 
 #include "logic/NodeFilters.h"
 #include "NodeSort.h"
@@ -256,7 +256,7 @@ CheckResult try_assign_nodes(JobInfo *jinfo, pars_spec_node *spec, const vector<
 CheckResult try_assign_spec(JobInfo *jinfo, const vector<node_info*>& nodes)
   {
   CheckResult result = CheckAvailable;
-  pars_spec_node *iter = jinfo->parsed_nodespec->nodes;
+  pars_spec_node *iter = jinfo->parsed_nodespec()->nodes;
 
   while (iter != NULL)
     {

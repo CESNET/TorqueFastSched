@@ -55,7 +55,8 @@ class FairshareTree
 
     void dump_to_cache() const;   ///< Dump information from this fairshare tree to pbs_cache
     void dump_to_file() const;    ///< Dump information from this fairshare to a file (usage.name)
-
+    void dump_to_ini() const;
+    
     void decay(); ///< Decay this fairshare tree
 
   private:
@@ -68,6 +69,7 @@ class FairshareTree
     void add_unknown(group_info *ginfo);  ///< Add this group into unknown
     void dump_to_cache(const std::string& metric, group_info *ginfo) const; ///< Recursive store to cache
     void dump_to_file(group_info *root, FILE *fp) const;  ///< Recursive store to file
+    void dump_to_ini(group_info *root, FILE *fp) const;
 
     void read_configuration();  ///< Read configuration file (resource_group.name)
     void read_usage();          ///< Read usage file (usage.name)

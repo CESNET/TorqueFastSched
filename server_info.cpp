@@ -96,7 +96,7 @@ extern "C" {
 #include "sort.h"
 #include "global_macros.h"
 
-#include "RescInfoDb.h"
+#include "SchedulerCore_RescInfoDb.h"
 #include "base/MiscHelpers.h"
 using namespace Scheduler;
 using namespace Core;

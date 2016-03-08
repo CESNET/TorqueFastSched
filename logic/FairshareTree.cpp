@@ -8,9 +8,13 @@
 #include <cstdio>
 #include <sstream>
 #include <stdexcept>
+#include <fstream>
 using namespace std;
 using namespace Scheduler;
 using namespace Logic;
+
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
 
 /*
  *
@@ -360,9 +364,35 @@ void FairshareTree::read_usage()
   if (this->p_tree == NULL)
     throw runtime_error("Fairshare not yet intialized.");
 
+  group_info *ginfo;   /* ptr to current group usage */
+
+  try
+    {
+    boost::property_tree::ptree pt;
+    boost::property_tree::read_ini(string("usage.")+this->p_name+string(".ini"),pt);
+
+    for (auto& section : pt)
+      {
+      for (auto& key : section.second)
+        {
+        ginfo = this->find_alloc_ginfo(key.first.c_str());
+
+        if (ginfo != NULL)
+          {
+          usage_t value = key.second.get_value<usage_t>();
+
+          ginfo->usage = value;
+          ginfo->temp_usage = value;
+          }
+        }
+      }
+
+    return;
+    }
+  catch (...) { } // if we didn't manage to read the configuration, fall back to old file format
+
   FILE *fp;    /* file pointer to usage file */
   struct group_node_usage grp;  /* struct used to read in usage info */
-  group_info *ginfo;   /* ptr to current group usage */
 
   string filename = string("usage.")+this->p_name;
 
@@ -407,6 +437,27 @@ void FairshareTree::dump_to_file() const
   fclose(fp);
   }
 
+void FairshareTree::dump_to_ini() const
+  {
+  if (this->p_tree == NULL)
+    throw runtime_error("Trying to store empty fairshare.");
+
+  string filename = string("usage.")+this->p_name+string(".ini");
+
+  FILE *fp = fopen(filename.c_str(),"wb");
+  if (fp == NULL)
+    {
+    string errtxt = string("Error while opening usage file for writing: ")+string(strerror(errno));
+    throw runtime_error(errtxt);
+    return;
+    }
+
+  fprintf(fp,"[default]\n");
+  this->dump_to_file(this->p_tree, fp);
+
+  fclose(fp);
+  }
+
 void FairshareTree::dump_to_file(group_info *root, FILE *fp) const
   {
   struct group_node_usage grp;  /* used to write out usage info */
@@ -422,6 +473,21 @@ void FairshareTree::dump_to_file(group_info *root, FILE *fp) const
 
     if (!fwrite(&grp, sizeof(struct group_node_usage), 1, fp))
       return;
+    }
+
+  this->dump_to_file(root -> sibling, fp);
+
+  this->dump_to_file(root -> child, fp);
+  }
+
+void FairshareTree::dump_to_ini(group_info *root, FILE *fp) const
+  {
+  if (root == NULL)
+    return;
+
+  if (root -> usage != 1)   /* usage defaults to 1 */
+    {
+    fprintf(fp,"%s=%lld\n",root->name,root->usage);
     }
 
   this->dump_to_file(root -> sibling, fp);

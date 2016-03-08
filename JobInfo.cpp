@@ -3,7 +3,7 @@
 #include "data_types.h"
 #include "logic/NodeFilters.h"
 #include "NodeSort.h"
-#include "RescInfoDb.h"
+#include "SchedulerCore_RescInfoDb.h"
 #include "globals.h"
 
 #include "base/MiscHelpers.h"
@@ -16,19 +16,11 @@ using namespace Core;
 #include <limits>
 using namespace std;
 
-JobInfo::JobInfo() : job_id(), custom_name(), comment(), nodespec(),
-  queue(nullptr), qtime(0), stime(0), priority(0), account(), group(),
-  state(JobNoState), can_never_run(false), can_not_run(false),
-  calculated_fairshare(0), sched_nodespec(), p_planned_nodes(),
-  p_planned_start(0), p_waiting_for(), ginfo(nullptr), parsed_nodespec(nullptr),
-  schedule(), cluster_name(), cluster_mode(ClusterNone), placement(),
-  resreq(nullptr), resused(nullptr) {}
-
 JobInfo::~JobInfo()
   {
   free_resource_req_list(this->resreq);
   free_resource_req_list(this->resused);
-  free_parsed_nodespec(this->parsed_nodespec);
+  free_parsed_nodespec(this->p_parsed_nodespec);
   }
 
 JobInfo::JobInfo(struct batch_status *job, queue_info *queue) : job_id(),
@@ -36,8 +28,8 @@ JobInfo::JobInfo(struct batch_status *job, queue_info *queue) : job_id(),
   priority(0), account(), group(), state(JobNoState), can_never_run(false),
   can_not_run(false), calculated_fairshare(0), sched_nodespec(),
   p_planned_nodes(), p_planned_start(0), p_waiting_for(), ginfo(nullptr),
-  parsed_nodespec(nullptr), schedule(), cluster_name(),
-  cluster_mode(ClusterNone), placement(), resreq(nullptr), resused(nullptr)
+  schedule(), cluster_name(), cluster_mode(ClusterNone), placement(),
+  resreq(nullptr), resused(nullptr), p_parsed_nodespec(nullptr)
   {
   struct attrl *attrp;  /* list of attributes returned from server */
   int count;   /* int used in string -> int conversion */
@@ -303,22 +295,11 @@ void JobInfo::plan_on_server(server_info* sinfo)
     }
   }
 
-int JobInfo::preprocess()
-  {
-  if (this->nodespec.size() == 0)
-    this->nodespec = "1:ppn=1";
-
-  if ((this->parsed_nodespec = parse_nodespec(this->nodespec.c_str())) == NULL)
-    return SCHD_ERROR;
-
-  return SUCCESS;
-  }
-
 double JobInfo::calculate_fairshare_cost(const vector<node_info*>& nodes) const
   {
   double fairshare_cost = 0;
 
-  pars_spec_node *iter = this->parsed_nodespec->nodes;
+  pars_spec_node *iter = this->parsed_nodespec()->nodes;
   while (iter != NULL)
     {
     vector<node_info*> fairshare_nodes; // construct possible nodes
@@ -374,14 +355,23 @@ bool JobInfo::is_starving() const noexcept
 
 bool JobInfo::is_multinode() const noexcept
   {
-  Expects(this->parsed_nodespec != NULL);
-
-  return this->parsed_nodespec->total_nodes > 1;
+  return this->parsed_nodespec()->total_nodes > 1;
   }
 
 bool JobInfo::is_exclusive() const noexcept
   {
-  Expects(this->parsed_nodespec != NULL);
+  return this->parsed_nodespec()->is_exclusive;
+  }
 
-  return this->parsed_nodespec->is_exclusive;
+pars_spec *JobInfo::parsed_nodespec() const
+  {
+  if (this->p_parsed_nodespec == NULL)
+    {
+    if (this->nodespec.size() == 0)
+      this->nodespec = "1:ppn=1";
+
+    this->p_parsed_nodespec = parse_nodespec(this->nodespec.c_str());
+    }
+
+  return this->p_parsed_nodespec;
   }

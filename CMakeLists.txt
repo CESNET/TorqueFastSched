@@ -21,7 +21,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -D_POSIX_C_SOURCE=200809L -gg
 
 #-Wpadded -Weffc++ -Wredundant-decls
 
-set(SOURCE_FILES pbs_sched.cpp server_info.cpp ServerInfo.cpp check.cpp dedtime.cpp fairshare.cpp fifo.cpp globals.cpp job_info.cpp JobInfo.cpp JobLog.cpp misc.cpp node_info.cpp NodeInfo.cpp NodeSort.cpp nodespec.cpp parse.cpp prev_job_info.cpp prime.cpp queue_info.cpp RescInfoDb.cpp SchedulerRealm.cpp sort.cpp state_count.cpp utility.cpp logic/FairshareTree.cpp logic/JobAssign.cpp logic/NodeFilters.cpp logic/NodeLogic.cpp base/Resource.cpp base/ResourceSet.cpp base/PropRegistry.cpp base/NodeState.cpp base/NodeData.cpp base/MiscHelpers.cpp base/DynamicResource.cpp SchedulerCore_ConnectionMgr.cpp site_pbs_cache.cpp)
+set(SOURCE_FILES pbs_sched.cpp server_info.cpp ServerInfo.cpp check.cpp dedtime.cpp fairshare.cpp fifo.cpp globals.cpp job_info.cpp JobInfo.cpp JobLog.cpp misc.cpp node_info.cpp NodeInfo.cpp NodeSort.cpp nodespec.cpp parse.cpp prev_job_info.cpp prime.cpp queue_info.cpp SchedulerRealm.cpp sort.cpp state_count.cpp utility.cpp logic/FairshareTree.cpp logic/JobAssign.cpp logic/NodeFilters.cpp logic/NodeLogic.cpp base/Resource.cpp base/ResourceSet.cpp base/PropRegistry.cpp base/NodeState.cpp base/NodeData.cpp base/MiscHelpers.cpp base/DynamicResource.cpp site_pbs_cache.cpp SchedulerCore_ConnectionMgr.cpp SchedulerCore_RescInfoDb.cpp)
 add_executable(torque-fast-sched ${SOURCE_FILES} legacy/site_pbs_cache_common.c)
 
 TARGET_LINK_LIBRARIES(torque-fast-sched torque pbscache)

@@ -2,7 +2,10 @@
 #define RESCINFODB_H_
 
 #include <string>
-#include <map>
+#include <unordered_map>
+
+namespace Scheduler {
+namespace Core {
 
 /** resources check mode */
 typedef enum { ResCheckNone, ResCheckStat, ResCheckCache, ResCheckBoth, ResCheckDynamic } reschecksource;
@@ -15,12 +18,13 @@ struct RescInfo
   reschecksource source;
   };
 
+/** Storage for resource meta-data */
 class RescInfoDb
   {
   public:
     void read_db(const std::string& filename);
-    typedef std::map<std::string,RescInfo>::iterator iterator;
-    typedef std::map<std::string,RescInfo>::const_iterator const_iterator;
+    typedef std::unordered_map<std::string,RescInfo>::iterator iterator;
+    typedef std::unordered_map<std::string,RescInfo>::const_iterator const_iterator;
 
     iterator begin();
     iterator end();
@@ -34,10 +38,12 @@ class RescInfoDb
     std::pair<iterator,bool> insert(const char *name, const char *comment, reschecksource source);
 
   private:
-    std::map<std::string,RescInfo> p_resources;
+    std::unordered_map<std::string,RescInfo> p_resources;
   };
 
 extern RescInfoDb resc_info_db;
 reschecksource res_check_type(const char *res_name);
+
+}}
 
 #endif /* RESCINFODB_H_ */

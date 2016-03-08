@@ -97,7 +97,7 @@
 #include "api.hpp"
 
 #include "data_types.h"
-#include "RescInfoDb.h"
+#include "SchedulerCore_RescInfoDb.h"
 #include "base/MiscHelpers.h"
 
 #include <string>

@@ -10,7 +10,8 @@
 
 struct JobInfo
   {
-  JobInfo();
+  
+  JobInfo() = delete;
   JobInfo(struct batch_status *job, queue_info *queue);
   ~JobInfo();
   
@@ -21,7 +22,7 @@ struct JobInfo
   /* Comment field of job */
   std::string comment;
   /** Processed nodespec from the server processed nodespec from the server */
-  std::string nodespec;
+  mutable std::string nodespec;
   /* Parent queue where the job resides */
   struct queue_info *queue;
   /* Time the job was last en-queued */
@@ -53,7 +54,7 @@ struct JobInfo
   /* the fair share node for the owner */
   group_info *ginfo;
   
-  pars_spec *parsed_nodespec;
+  
   /* currently considered schedule */
   std::vector<node_info*> schedule; 
   std::string cluster_name; /**< cluster name passed from -l cluster=...*/
@@ -68,7 +69,6 @@ struct JobInfo
   void plan_on_queue(queue_info* qinfo);
   void plan_on_server(server_info* sinfo);
   long get_walltime() const;
-  int preprocess();
   double calculate_fairshare_cost(const std::vector<node_info *>& nodes) const;
   time_t completion_time();
   const char* state_string() { return JobStateString[state]; }
@@ -99,7 +99,14 @@ struct JobInfo
    * @return TRUE if job is requesting machines exclusively, FALSE otherwise
    */  
   bool is_exclusive() const noexcept;  
+
   
+  pars_spec *parsed_nodespec() const;
+
+  private:
+    mutable pars_spec *p_parsed_nodespec;
+    
+    
   };
 
 #endif /* JOBINFO_H_ */

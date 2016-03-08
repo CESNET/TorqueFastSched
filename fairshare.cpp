@@ -139,6 +139,7 @@ void write_usages()
   while (it != fairshare_trees.end())
     {
     it->second.dump_to_file();
+    it->second.dump_to_ini();
     ++it;
     }
   }

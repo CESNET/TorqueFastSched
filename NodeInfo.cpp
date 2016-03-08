@@ -4,7 +4,7 @@
 #include "NodeInfo.h"
 #include "server_info.h"
 #include "misc.h"
-#include "RescInfoDb.h"
+#include "SchedulerCore_RescInfoDb.h"
 #include "site_pbs_cache_scheduler.h"
 #include "boost/make_shared.hpp"
 #include "boost/shared_ptr.hpp"
