@@ -453,7 +453,7 @@ void FairshareTree::dump_to_ini() const
     }
 
   fprintf(fp,"[default]\n");
-  this->dump_to_file(this->p_tree, fp);
+  this->dump_to_ini(this->p_tree, fp);
 
   fclose(fp);
   }
@@ -490,9 +490,9 @@ void FairshareTree::dump_to_ini(group_info *root, FILE *fp) const
     fprintf(fp,"%s=%lld\n",root->name,root->usage);
     }
 
-  this->dump_to_file(root -> sibling, fp);
+  this->dump_to_ini(root -> sibling, fp);
 
-  this->dump_to_file(root -> child, fp);
+  this->dump_to_ini(root -> child, fp);
   }
 
 void FairshareTree::decay()
