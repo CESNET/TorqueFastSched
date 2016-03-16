@@ -16,6 +16,7 @@
 using namespace std;
 
 #include "logic/FairshareTree.h"
+#include "include/gsl.h"
 
 extern "C" {
 #include <pbs_ifl.h>
@@ -135,13 +136,16 @@ bool World::fetch_servers()
           free(p_info->jobs);
           p_info->jobs = merged;
 
-          free(p_info->running_jobs);
-          p_info->running_jobs = job_filter(p_info->jobs, p_info->sc.total, check_run_job, NULL);
+          p_info->running_jobs.clear();
+          copy_if(p_info->jobs,&p_info->jobs[p_info->sc.total],p_info->running_jobs.begin(),
+                  [](JobInfo* j){ return j->state == JobRunning; });
           }
         }
       }
     ++i;
     }
+
+  p_info->regenerate_jobs_by_owner();
 
   return true;
   }
@@ -272,6 +276,8 @@ void World::init_scheduling_cycle()
 
 void World::update_last_running()
   {
+  Expects(static_cast<size_t>(p_info->sc.running) == p_info->running_jobs.size());
+
   for (size_t i = 0; i < p_last_running.size(); i++)
     {
     free_prev_job_info(&p_last_running[i]);
@@ -280,7 +286,7 @@ void World::update_last_running()
   p_last_running.clear();
   p_last_running.resize(p_info->sc.running);
 
-  for (int i = 0; p_info->running_jobs[i] != NULL; i++)
+  for (size_t i = 0; i < p_info->running_jobs.size(); i++)
     {
     p_last_running[i].name = strdup(p_info->running_jobs[i]->job_id.c_str());
     p_last_running[i].resused = clone_resource_req_list(p_info->running_jobs[i]->resused);
@@ -355,16 +361,12 @@ int World::try_run_job(JobInfo *jinfo)
       sched_log(PBSEVENT_SCHED, PBS_EVENTCLASS_JOB, jinfo -> job_id.c_str(), "Job Waiting for booting node.");
       }
 
-    update_server_on_run(p_info, jinfo);
+    p_info->update_on_jobrun(jinfo);
     update_queue_on_run(jinfo->queue, jinfo);
     update_job_on_run(socket, jinfo);
 
     if (!booting && cstat.fair_share)
       update_usage_on_run(jinfo);
-
-    free(p_info -> running_jobs);
-    p_info -> running_jobs = job_filter(p_info -> jobs, p_info -> sc.total,
-                                       check_run_job, NULL);
 
     free(jinfo->queue-> running_jobs);
     jinfo->queue-> running_jobs = job_filter(jinfo->queue-> jobs, jinfo->queue -> sc.total,

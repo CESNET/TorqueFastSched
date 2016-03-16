@@ -657,7 +657,7 @@ void node_info::expand_virtual_nodes()
     {
 
     // go through all the running jobs, find the corresponding one
-    for (int j = 0; this->get_parent_server()->running_jobs[j] != NULL; j++)
+    for (int j = 0; j < this->get_parent_server()->running_jobs.size(); j++)
       {
       if (*i == this->get_parent_server()->running_jobs[j]->job_id)
         {

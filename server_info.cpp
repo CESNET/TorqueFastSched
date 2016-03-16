@@ -183,8 +183,9 @@ server_info *query_server(int pbs_sd)
 
   set_jobs(sinfo);
 
-  sinfo -> running_jobs =
-    job_filter(sinfo -> jobs, sinfo -> sc.total, check_run_job, NULL);
+  sinfo->running_jobs.clear();
+  copy_if(sinfo->jobs,&sinfo->jobs[sinfo->sc.total],sinfo->running_jobs.begin(),
+          [](JobInfo* j) { return j->state == JobRunning; });
 
   sinfo -> non_dedicated_nodes =
 
@@ -335,9 +336,6 @@ void free_server_info(server_info *sinfo)
   if (sinfo -> jobs != NULL)
     free(sinfo -> jobs);
 
-  if (sinfo -> running_jobs != NULL)
-    free(sinfo -> running_jobs);
-
   if (sinfo -> non_dedicated_nodes != NULL)
     free(sinfo -> non_dedicated_nodes);
 
@@ -365,8 +363,6 @@ server_info *new_server_info()
   sinfo -> queues = NULL;
 
   sinfo -> jobs = NULL;
-
-  sinfo -> running_jobs = NULL;
 
   sinfo -> nodes = NULL;
 
@@ -432,29 +428,6 @@ void update_server_on_move(server_info *sinfo, JobInfo *jinfo)
   {
   sinfo -> sc.running++;
   jinfo -> queue -> server -> sc.queued--;
-
-  for (int i = 0; i < sinfo->num_nodes; i++)
-    if (sinfo->nodes[i]->has_assignment())
-      jinfo->plan_on_node(sinfo->nodes[i],sinfo->nodes[i]->get_assignment());
-  }
-
-/*
- *
- * update_server_on_run - update server_info strucutre when a job is run
- *
- *   sinfo - the server to update
- *   qinfo - the queue the job is in
- *   jinfo - the job that was run
- *
- * returns nothing
- *
- */
-void update_server_on_run(server_info *sinfo, JobInfo *jinfo)
-  {
-  sinfo -> sc.running++;
-  sinfo -> sc.queued--;
-
-  jinfo->plan_on_server(sinfo);
 
   for (int i = 0; i < sinfo->num_nodes; i++)
     if (sinfo->nodes[i]->has_assignment())

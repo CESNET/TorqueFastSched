@@ -170,6 +170,46 @@ void update_usage_on_run(JobInfo *jinfo) // TODO zaintegrovat mem
   jinfo -> ginfo -> temp_usage += calculate_usage_value(jinfo -> resreq)*tmp->amount;
   }
 
+
+JobInfo *extract_fairshare(server_info *sinfo)
+  {
+  JobInfo *max = NULL;
+  int max_priority = -1;
+  double max_value = -1;
+  double curr_value = -1;
+
+  for (auto user : sinfo->jobs_by_owner)
+    {
+    // first remove all jobs that cannot run, or are already running
+    while (user.second.size() > 0 &&
+           ((!user.second.front()->suitable_for_run()) ||
+            (user.second.front()->state == JobRunning)))
+      user.second.pop_front();
+
+    // if the highest priority job of this user does not have high enough priority
+    // we can safely skip the entire user
+    if (user.second.front()->queue->priority < max_priority)
+      continue;
+
+    // if we are upgrading queue priority, we need to reset fairshare
+    if (user.second.front()->queue->priority > max_priority)
+      {
+      max_value = -1;
+      max_priority = user.second.front()->queue->priority;
+      }
+
+    curr_value = user.second.front()->ginfo->percentage / user.second.front()->ginfo->temp_usage;
+
+    if (max_value < curr_value)
+      {
+      max = user.second.front();
+      max_value = curr_value;
+      }
+    }
+
+  return max;
+  }
+
 /*
  *
  * extract_fairshare - extract the first job from the user with the

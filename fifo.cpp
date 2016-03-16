@@ -362,7 +362,7 @@ JobInfo *next_job(server_info *sinfo, int init)
     else
       {
       if (cstat.fair_share)
-        rjob = extract_fairshare(sinfo -> jobs);
+        rjob = extract_fairshare(sinfo);
       else
         {
         last_job++;

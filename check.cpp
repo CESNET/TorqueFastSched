@@ -276,7 +276,7 @@ int is_ok_to_run_job(server_info *sinfo, queue_info *qinfo,
 int check_server_max_user_run(server_info *sinfo, char *account)
   {
   if (sinfo -> max_user_run == INFINITY ||
-      count_by_user(sinfo -> running_jobs, account) < sinfo -> max_user_run)
+      sinfo->number_of_running_jobs_for_user(std::string(account)) < sinfo -> max_user_run)
     return 0;
 
   return SERVER_USER_LIMIT_REACHED;
@@ -361,7 +361,7 @@ int check_queue_max_group_run(queue_info *qinfo, char *group)
 int check_server_max_group_run(server_info *sinfo, char *group)
   {
   if (sinfo -> max_group_run == INFINITY ||
-      count_by_group(sinfo -> running_jobs, group) < sinfo -> max_group_run)
+      sinfo->number_of_running_jobs_for_group(std::string(group)) < sinfo -> max_group_run)
     return 0;
 
   return SERVER_GROUP_LIMIT_REACHED;

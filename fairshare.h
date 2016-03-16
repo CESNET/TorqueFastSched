@@ -124,6 +124,8 @@ void decay_fairshare_trees();
  */
 JobInfo *extract_fairshare(JobInfo **jobs);
 
+JobInfo *extract_fairshare(server_info *sinfo);
+
 /*
  *      write_usage - write the usage information to the usage file
  *                    This fuction uses a recursive helper function
