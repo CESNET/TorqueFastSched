@@ -319,7 +319,7 @@ queue_info **query_queues(int pbs_sd, server_info *sinfo)
       update_jobs_cant_run(pbs_sd, qinfo -> jobs, NULL, comment, START_WITH_JOB);
       }
 
-    count_states(qinfo->jobs, &(qinfo -> sc));
+    count_states(qinfo->jobs, qinfo -> sc);
 
     qinfo->running_jobs.clear();
     qinfo->running_jobs.reserve(qinfo->jobs.size()/2);

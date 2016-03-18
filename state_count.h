@@ -97,8 +97,6 @@ void init_state_count(state_count *sc);
 /*
  *      count_states - count the jobs in each state and set the state counts
  */
-void count_states(JobInfo * const *jobs, state_count *sc);
-void count_states(const std::vector<JobInfo*>& jobs, state_count *sc);
 void count_states(const std::vector<JobInfo*>& jobs, state_count& sc);
 
 /*

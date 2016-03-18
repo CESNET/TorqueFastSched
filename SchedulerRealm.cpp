@@ -95,7 +95,7 @@ bool World::fetch_servers()
           qinfo->jobs.insert(end(qinfo->jobs),begin(jobs),end(jobs));
 
           init_state_count(&qinfo->sc);
-          count_states(qinfo->jobs,&qinfo->sc);
+          count_states(qinfo->jobs, qinfo->sc);
 
           qinfo->running_jobs.clear();
           copy_if(begin(qinfo->jobs),end(qinfo->jobs),back_inserter(qinfo->running_jobs),
@@ -105,7 +105,7 @@ bool World::fetch_servers()
           p_info->jobs.insert(end(p_info->jobs),begin(jobs),end(jobs));
 
           init_state_count(&p_info->sc);
-          count_states(p_info->jobs,p_info->sc);
+          count_states(p_info->jobs, p_info->sc);
 
           p_info->running_jobs.clear();
           copy_if(begin(p_info->jobs),end(p_info->jobs),back_inserter(p_info->running_jobs),

@@ -156,50 +156,6 @@ void count_states(const vector<JobInfo*>& jobs, state_count& sc)
   sc.total = sc.queued + sc.running + sc.transit + sc.exiting + sc.held + sc.waiting + sc.suspended + sc.completed + sc.crossrun;
   }
 
-
-void count_states(const vector<JobInfo*>& jobs, state_count *sc)
-  {
-  count_states(jobs.data(),sc);
-  }
-/*
- *
- * count_states - count the jobs in each state and set the state counts
- *
- *   jobs - array of jobs
- *   sc   - state count structure passed by reference
- *
- * returns nothing
- *
- */
-void count_states(JobInfo * const *jobs, state_count *sc)
-  {
-  int i;
-
-  if (jobs  != NULL)
-    {
-    for (i = 0; jobs[i] != NULL; i++)
-      {
-      switch (jobs[i]->state)
-        {
-        case JobQueued:     sc->queued++;     break;
-        case JobRunning:    sc->running++;    break;
-        case JobTransit:    sc->transit++;    break;
-        case JobExiting:    sc->exiting++;    break;
-        case JobHeld:       sc->held++;       break;
-        case JobWaiting:    sc->waiting++;    break;
-        case JobSuspended:  sc->suspended++;  break;
-        case JobCompleted:  sc->completed++;  break;
-        case JobCrossRun:   sc->crossrun++;   break;
-        default:
-          sched_log(PBSEVENT_JOB, PBS_EVENTCLASS_JOB, jobs[i] -> job_id.c_str(), "Job in unknown state");
-        }
-      }
-    }
-
-  sc -> total = sc -> queued + sc -> running + sc -> transit + sc -> exiting + sc -> held + sc -> waiting + sc -> suspended + sc -> completed + sc -> crossrun;
-
-  }
-
 /*
  *
  * total_states - add the states from sc2 to the states in sc1
