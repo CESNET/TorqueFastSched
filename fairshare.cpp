@@ -186,6 +186,9 @@ JobInfo *extract_fairshare(server_info *sinfo)
             (user.second.front()->state == JobRunning)))
       user.second.pop_front();
 
+    if (user.second.size() == 0)
+      continue;
+
     // if the highest priority job of this user does not have high enough priority
     // we can safely skip the entire user
     if (user.second.front()->queue->priority < max_priority)

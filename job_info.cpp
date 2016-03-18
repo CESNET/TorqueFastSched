@@ -133,9 +133,12 @@ bool query_jobs(int pbs_sd, queue_info *qinfo, vector<JobInfo*>& result)
   if ((jobs = pbs_selstat(pbs_sd, &opl, NULL)) == NULL)
     {
     if (pbs_errno > 0)
+      {
       fprintf(stderr, "pbs_selstat failed: %d\n", pbs_errno);
+      return false;
+      }
 
-    return false;
+    return true;
     }
 
   cur_job = jobs;
