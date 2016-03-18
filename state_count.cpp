@@ -84,31 +84,7 @@
 #include "state_count.h"
 #include "constant.h"
 #include "misc.h"
-
-
 using namespace std;
-
-/*
- *
- * print_state_count - print out a state_count struct
- *
- *   sc - the struct to print
- *
- * returns nothing
- *
- */
-void print_state_count(state_count *sc)
-  {
-  printf("running: %d\n", sc -> running);
-  printf("queued: %d\n", sc -> queued);
-  printf("transit: %d\n", sc -> transit);
-  printf("exiting: %d\n", sc -> exiting);
-  printf("held: %d\n", sc -> held);
-  printf("waiting: %d\n", sc -> waiting);
-  printf("suspended: %d\n", sc -> suspended);
-  printf("completed: %d\n", sc -> completed);
-  printf("total: %d\n", sc -> total);
-  }
 
 /*
  *
