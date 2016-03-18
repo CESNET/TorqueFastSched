@@ -86,30 +86,6 @@
 extern "C" int schedinit(int argc, char *argv[]);
 
 /*
- *      schedule - this function gets called to start each scheduling cycle
- *                 It will handle the difference cases that caused a
- *                 scheduling cycle
- */
-extern "C" int schedule(int cmd, int sd);
-
-/*
- *      scheduling_cycle - the controling function of the scheduling cycle
- */
-
-int scheduling_cycle(int sd);
-
-/*
- *      init_scheduling_cycle - run things that need to be set up every
- *                              scheduling cycle
- */
-int init_schedule_cycle(server_info *sinfo);
-
-/*
- *      run_update_job - run and update the job information
- */
-int run_update_job(int pbs_sd, server_info *sinfo, queue_info *qinfo,
-                   JobInfo *jinfo);
-/*
  *
  *      next_job - find the next job to be run by the scheduler
  *
@@ -123,20 +99,6 @@ int run_update_job(int pbs_sd, server_info *sinfo, queue_info *qinfo,
 
 JobInfo *next_job(server_info *sinfo, int ret_code);
 
-#if DEPRECATED
-/*
- *      update_last_running - update the last_running job array
- */
-int update_last_running(world_server_t *server);
-#endif
-/*
- *
- *      update_starvation - update jobs sch_priority for starvation
- */
-JobInfo *update_starvation(JobInfo **jobs);
-
-
-void
-update_cycle_status(void);
+void update_cycle_status(void);
 
 #endif

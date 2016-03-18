@@ -35,8 +35,8 @@ void comma_list_to_set(char *list, set<string>& s)
 
 sch_resource_t res_to_num(char * res_str)
   {
-  sch_resource_t count = UNSPECIFIED; /* convert string resource to numeric */
-  sch_resource_t count2 = UNSPECIFIED; /* convert string resource to numeric */
+  sch_resource_t count = RESC_UNSPECIFIED; /* convert string resource to numeric */
+  sch_resource_t count2 = RESC_UNSPECIFIED; /* convert string resource to numeric */
   char *endp;    /* used for strtol() */
   char *endp2;    /* used for strtol() */
   long multiplier;   /* multiplier to count */
@@ -54,7 +54,7 @@ sch_resource_t res_to_num(char * res_str)
       count += strtol(endp2 + 1, &endp, 10);
 
       if (*endp != '\0')
-        count = UNSPECIFIED;
+        count = RESC_UNSPECIFIED;
       }
     else   /* form of MM:SS */
       {

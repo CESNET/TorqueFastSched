@@ -110,7 +110,7 @@ void print_queue_info(queue_info *qinfo, char brief, char deep);
 /*
  *      free_queues - frees the memory for an array
  */
-void free_queues(queue_info **qinfo, char free_jobs_too);
+void free_queues(queue_info **qinfo, bool free_jobs_too);
 
 /** Update queue on job move
  *

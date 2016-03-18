@@ -10,7 +10,7 @@
 #include "boost/shared_ptr.hpp"
 
 using namespace std;
-node_info& node_info::operator = (const node_info& src) { return *this; }
+//node_info& node_info::operator = (const node_info& src) { return *this; }
 
 void node_info::propagate_resources(node_info *source)
   {
@@ -27,7 +27,7 @@ void node_info::propagate_resources(node_info *source)
     }
   }
 
-int node_has_enough_resource(node_info *ninfo, char *name, char *value, enum ResourceCheckMode mode);
+//int node_has_enough_resource(node_info *ninfo, char *name, char *value, enum ResourceCheckMode mode);
 
 CheckResult result_helper(bool result)
   {
@@ -105,7 +105,7 @@ unsigned long long node_info::get_mem_total() const
   return mem->get_capacity();
 }
 
-CheckResult node_info::has_props_boot(const JobInfo *job, const pars_spec_node *spec, const repository_alternatives *virt_conf) const
+CheckResult node_info::has_props_boot(const JobInfo *, const pars_spec_node *spec, const repository_alternatives *virt_conf) const
   {
   CheckResult result = CheckAvailable;
   pars_prop *prop = spec->properties;
@@ -127,7 +127,7 @@ CheckResult node_info::has_props_boot(const JobInfo *job, const pars_spec_node *
   return result;
   }
 
-CheckResult node_info::has_props_run(const JobInfo *job, const pars_spec_node *spec) const
+CheckResult node_info::has_props_run(const JobInfo *, const pars_spec_node *spec) const
   {
   CheckResult result = CheckAvailable;
   pars_prop *prop = spec->properties;
@@ -657,7 +657,7 @@ void node_info::expand_virtual_nodes()
     {
 
     // go through all the running jobs, find the corresponding one
-    for (int j = 0; j < this->get_parent_server()->running_jobs.size(); j++)
+    for (size_t j = 0; j < this->get_parent_server()->running_jobs.size(); j++)
       {
       if (*i == this->get_parent_server()->running_jobs[j]->job_id)
         {

@@ -99,6 +99,7 @@ void init_state_count(state_count *sc);
  */
 void count_states(JobInfo * const *jobs, state_count *sc);
 void count_states(const std::vector<JobInfo*>& jobs, state_count *sc);
+void count_states(const std::vector<JobInfo*>& jobs, state_count& sc);
 
 /*
  * accumulate states from one state_count into another

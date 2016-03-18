@@ -69,7 +69,7 @@ int socket_to_conn(int sock) noexcept
 int privileged_connect(const char* server) noexcept
   {
   pbs_net_t hostaddr;
-  if ((hostaddr = get_hostaddr((char*)server)) == (pbs_net_t)0)
+  if ((hostaddr = get_hostaddr(const_cast<char*>(server))) == (pbs_net_t)0)
     {
     return -1;
     }

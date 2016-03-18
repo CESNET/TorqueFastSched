@@ -7,7 +7,7 @@ using namespace std;
 using namespace Scheduler;
 using namespace Core;
 
-Resource::Resource(const string& name) : p_res_type(ResourceStatic), p_name(name), p_str_val(), p_avail(UNSPECIFIED), p_max(INFINITY), p_assign(UNSPECIFIED) {}
+Resource::Resource(const string& name) : p_res_type(ResourceStatic), p_name(name), p_str_val(), p_avail(RESC_UNSPECIFIED), p_max(RESC_INFINITY), p_assign(RESC_UNSPECIFIED) {}
 
 Resource::~Resource() {}
 
@@ -21,9 +21,9 @@ void Resource::set_capacity(char *value)
     }
   else
     {
-    this->p_max = UNSPECIFIED;
-    this->p_avail = UNSPECIFIED;
-    this->p_assign = UNSPECIFIED;
+    this->p_max = RESC_UNSPECIFIED;
+    this->p_avail = RESC_UNSPECIFIED;
+    this->p_assign = RESC_UNSPECIFIED;
     this->p_str_val = value;
     this->p_res_type = ResourceString;
     }
@@ -34,14 +34,14 @@ void Resource::set_avail(char *value)
   if (is_num(value))
     {
     this->p_avail = res_to_num(value);
-    this->p_max = UNSPECIFIED; // dynamic resources don't have capacity
+    this->p_max = RESC_UNSPECIFIED; // dynamic resources don't have capacity
     this->p_str_val = value;
     this->p_res_type = ResourceDynamic;
     }
   else
     {
     this->p_avail = 0;
-    this->p_max = UNSPECIFIED;
+    this->p_max = RESC_UNSPECIFIED;
     this->p_str_val = value;
     this->p_res_type = ResourceString;
     }
@@ -85,17 +85,17 @@ void Resource::freeup_resource(sch_resource_t value)
 void Resource::reset()
   {
   this->p_res_type = ResourceStatic;
-  this->p_avail = UNSPECIFIED;
-  this->p_max = UNSPECIFIED;
-  this->p_assign = UNSPECIFIED;
+  this->p_avail = RESC_UNSPECIFIED;
+  this->p_max = RESC_UNSPECIFIED;
+  this->p_assign = RESC_UNSPECIFIED;
   }
 
 CheckResult Resource::check_numeric_fit(sch_resource_t amount)
   {
-  if (this->p_max != INFINITY && this->p_max != UNSPECIFIED && this->p_max < amount) // there is a max and it's lower than the requested amount
+  if (this->p_max != RESC_INFINITY && this->p_max != RESC_UNSPECIFIED && this->p_max < amount) // there is a max and it's lower than the requested amount
     return CheckNonFit;
 
-  if (this->p_max == UNSPECIFIED || this->p_max == INFINITY) // no max value present, only current
+  if (this->p_max == RESC_UNSPECIFIED || this->p_max == RESC_INFINITY) // no max value present, only current
     {
     if (this->p_avail - this->p_assign >= amount)
       return CheckAvailable;

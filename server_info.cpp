@@ -174,21 +174,14 @@ server_info *query_server(int pbs_sd)
     qinfo++;
     }
 
-  if ((sinfo -> jobs = (JobInfo **) malloc(sizeof(JobInfo *) * (sinfo -> sc.total + 1))) == NULL)
-    {
-    free_server(sinfo, 1);
-    perror("Memory allocation error");
-    return NULL;
-    }
-
   set_jobs(sinfo);
 
   sinfo->running_jobs.clear();
-  copy_if(sinfo->jobs,&sinfo->jobs[sinfo->sc.total],sinfo->running_jobs.begin(),
+  sinfo->running_jobs.reserve(sinfo->jobs.size()/2);
+  copy_if(begin(sinfo->jobs), end(sinfo->jobs), back_inserter(sinfo->running_jobs),
           [](JobInfo* j) { return j->state == JobRunning; });
 
   sinfo -> non_dedicated_nodes =
-
     node_filter(sinfo -> nodes, sinfo -> num_nodes, is_node_non_dedicated, NULL);
 
   i = 0;
@@ -333,9 +326,6 @@ void free_server_info(server_info *sinfo)
   if (sinfo -> default_queue != NULL)
     free(sinfo -> default_queue);
 
-  if (sinfo -> jobs != NULL)
-    free(sinfo -> jobs);
-
   if (sinfo -> non_dedicated_nodes != NULL)
     free(sinfo -> non_dedicated_nodes);
 
@@ -362,8 +352,6 @@ server_info *new_server_info()
 
   sinfo -> queues = NULL;
 
-  sinfo -> jobs = NULL;
-
   sinfo -> nodes = NULL;
 
   sinfo -> non_dedicated_nodes = NULL;
@@ -372,13 +360,13 @@ server_info *new_server_info()
 
   sinfo -> num_nodes = 0;
 
-  sinfo -> max_run = INFINITY;
+  sinfo -> max_run = RESC_INFINITY;
 
-  sinfo -> max_user_run = INFINITY;
+  sinfo -> max_user_run = RESC_INFINITY;
 
-  sinfo -> max_group_run = INFINITY;
+  sinfo -> max_group_run = RESC_INFINITY;
 
-  sinfo -> max_installing_nodes = INFINITY;
+  sinfo -> max_installing_nodes = RESC_INFINITY;
 
   sinfo -> tokens = NULL;
 
@@ -406,7 +394,7 @@ void free_server(server_info *sinfo, int free_objs_too)
 
   if (free_objs_too)
     {
-    free_queues(sinfo -> queues, 1);
+    free_queues(sinfo -> queues, true);
     free_nodes(sinfo -> nodes);
     }
 
@@ -446,41 +434,14 @@ void update_server_on_move(server_info *sinfo, JobInfo *jinfo)
 void set_jobs(server_info *sinfo)
   {
   queue_info **qinfo;  /* used to cycle through the array of queues */
-  JobInfo **jinfo;  /* used in copying jobs to server array */
-  int i = 0, j;
 
   qinfo = sinfo -> queues;
 
   while (*qinfo != NULL)
     {
-    jinfo = (*qinfo) -> jobs;
-
-    if (jinfo != NULL)
-      {
-      for (j = 0; jinfo[j] != NULL; j++, i++)
-        sinfo -> jobs[i] = jinfo[j];
-      }
-
+    sinfo->jobs.insert(end(sinfo->jobs),begin((*qinfo)->jobs),end((*qinfo)->jobs));
     qinfo++;
     }
-
-  sinfo -> jobs[i] = NULL;
-  }
-
-/*
- *
- *      check_run_job - function used by job_filter to filter out
- *                      non-running jobs.
- *
- *        job - the job to check
- *        arg - optional arg
- *
- *      returns 1 if the job is running
- *
- */
-int check_run_job(JobInfo *job, void * UNUSED(arg))
-  {
-  return job -> state == JobRunning;
   }
 
 token** get_token_array(char* tokenlist)

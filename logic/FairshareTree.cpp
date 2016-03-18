@@ -35,9 +35,9 @@ group_info *new_group_info()
 
   tmp -> name = NULL;
 
-  tmp -> resgroup = UNSPECIFIED;
-  tmp -> cresgroup = UNSPECIFIED;
-  tmp -> shares = UNSPECIFIED;
+  tmp -> resgroup = RESC_UNSPECIFIED;
+  tmp -> cresgroup = RESC_UNSPECIFIED;
+  tmp -> shares = RESC_UNSPECIFIED;
   tmp -> percentage = 0.0;
   tmp -> usage = 1;
   tmp -> temp_usage = 1;
@@ -146,7 +146,7 @@ int calc_fair_share_perc(group_info *root, int shares)
   if (root == NULL)
     return 0;
 
-  if (shares == UNSPECIFIED)
+  if (shares == RESC_UNSPECIFIED)
     cur_shares = count_shares(root);
   else
     cur_shares = shares;
@@ -156,7 +156,7 @@ int calc_fair_share_perc(group_info *root, int shares)
 
   calc_fair_share_perc(root -> sibling, cur_shares);
 
-  calc_fair_share_perc(root -> child, UNSPECIFIED);
+  calc_fair_share_perc(root -> child, RESC_UNSPECIFIED);
 
   return 1;
   }
@@ -169,7 +169,7 @@ FairshareTree::FairshareTree(const std::string& name) : p_name(name), p_count(NU
     throw runtime_error("Couldn't initialize fairshare root.");
 
   this->read_configuration();
-  calc_fair_share_perc(this->p_tree->child,UNSPECIFIED);
+  calc_fair_share_perc(this->p_tree->child,RESC_UNSPECIFIED);
   this->read_usage();
 }
 
@@ -200,7 +200,7 @@ void FairshareTree::add_unknown(group_info *ginfo)
 
   unknown = this->find_ginfo("unknown");
   add_child(ginfo, unknown);
-  calc_fair_share_perc(unknown -> child, UNSPECIFIED);
+  calc_fair_share_perc(unknown -> child, RESC_UNSPECIFIED);
   }
 
 

@@ -196,13 +196,14 @@ int parse_ded_file(const char *filename)
  */
 int cmp_ded_time(const void *v1, const void *v2)
   {
-  if (((struct timegap *)v1) -> from == 0 && ((struct timegap *)v2) -> from != 0)
+
+  if (((const struct timegap *)v1) -> from == 0 && ((const struct timegap *)v2) -> from != 0)
     return 1;
-  else if (((struct timegap *)v2) -> from == 0 && ((struct timegap *)v1) -> from != 0)
+  else if (((const struct timegap *)v2) -> from == 0 && ((const struct timegap *)v1) -> from != 0)
     return -1;
-  else if (((struct timegap *)v1) -> from > ((struct timegap *)v2) -> from)
+  else if (((const struct timegap *)v1) -> from > ((const struct timegap *)v2) -> from)
     return 1;
-  else if (((struct timegap *)v1) -> from < ((struct timegap *)v2) -> from)
+  else if (((const struct timegap *)v1) -> from < ((const struct timegap *)v2) -> from)
     return -1;
   else
     return 0;

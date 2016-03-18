@@ -79,6 +79,8 @@
 #ifndef CONSTANT_H
 #define CONSTANT_H
 
+#include <limits>
+
 /* multipliers [bw] means either btye or word */
 #define KILO  1024UL  /* number of [bw] in a kilo[bw] */
 #define MEGATOKILO  1024UL  /* number of mega[bw] in a kilo[bw] */
@@ -86,10 +88,10 @@
 #define TERATOKILO  1073741824UL /* number of tera[bw] in a kilo[bw] */
 
 /* extra constants */
-#define UNSPECIFIED -1  /* unspecified value */
+constexpr long long RESC_UNSPECIFIED = -1;
+constexpr long long RESC_INFINITY = -2;
 #define FREE_DEEP 1  /* constant to pass to free_*_list */
 #define INITIALIZE -1
-#define INFINITY -2  /* infinity value for resources */
 
 /* for update_jobs_cant run */
 #define START_BEFORE_JOB -1
@@ -135,22 +137,6 @@
 #define SCHEDULER_LOOP_RUN_LIMIT_REACHED (RET_BASE + 33)
 #define UNKNOWN_LOCATION_PROPERTY_REQUEST (RET_BASE + 34)
 #define JOB_SCHEDULED (RET_BASE + 35)
-
-/* for SORT_BY */
-enum sort_type
-  {
-  NO_SORT,
-  SHORTEST_JOB_FIRST,
-  LONGEST_JOB_FIRST,
-  SMALLEST_MEM_FIRST,
-  LARGEST_MEM_FIRST,
-  HIGH_PRIORITY_FIRST,
-  LOW_PRIORITY_FIRST,
-  LARGE_WALLTIME_FIRST,
-  SHORT_WALLTIME_FIRST,
-  FAIR_SHARE,
-  MULTI_SORT
-  };
 
 #ifdef FALSE
 #  undef FALSE

@@ -95,6 +95,8 @@
 #include "SchedulerCore_RescInfoDb.h"
 #include "base/PropRegistry.h"
 
+#include "include/gsl.h"
+
 using namespace Scheduler;
 using namespace Core;
 using namespace std;
@@ -122,7 +124,7 @@ int check_nodespec(server_info *sinfo, JobInfo *jinfo, int nodecount, node_info 
 
 int is_ok_to_run_queue(queue_info *qinfo)
   {
-  int rc = UNSPECIFIED;  /* Return Code */
+  int rc = SUCCESS;  /* Return Code */
 
   if (qinfo -> is_exec)
     {
@@ -194,13 +196,13 @@ int is_ok_to_run_job(server_info *sinfo, queue_info *qinfo,
     return rc;
     }
 
-  if ((rc = check_server_max_user_run(sinfo, (char*)jinfo -> account.c_str())))
+  if ((rc = check_server_max_user_run(sinfo, jinfo->account)))
     {
     sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), "Job isn't eligible for run, because owner of the job already reached the per-user server limit of running jobs.");
     return rc;
     }
 
-  if ((rc = check_server_max_group_run(sinfo, (char*)jinfo -> group.c_str())))
+  if ((rc = check_server_max_group_run(sinfo, jinfo->group)))
     {
     sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), "Job isn't eligible for run, because owner of the job already reached the per-group server limit of running jobs.");
     return rc;
@@ -212,13 +214,13 @@ int is_ok_to_run_job(server_info *sinfo, queue_info *qinfo,
     return rc;
     }
 
-  if ((rc = check_queue_max_user_run(qinfo, (char*)jinfo -> account.c_str())))
+  if ((rc = check_queue_max_user_run(qinfo, jinfo->account)))
     {
     sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), "Job isn't eligible for run, because owner of the job already reached the per-user queue (%s) limit of running jobs.",qinfo->name);
     return rc;
     }
 
-  if ((rc = check_queue_max_group_run(qinfo, (char*)jinfo -> group.c_str())))
+  if ((rc = check_queue_max_group_run(qinfo, jinfo->group)))
     {
     sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_JOB, jinfo->job_id.c_str(), "Job isn't eligible for run, because owner of the job already reached the per-group queue (%s) limit of running jobs.",qinfo->name);
     return rc;
@@ -273,10 +275,10 @@ int is_ok_to_run_job(server_info *sinfo, queue_info *qinfo,
  *   SERVER_USER_LIMIT_REACHED: if the user has reached their limit
  *
  */
-int check_server_max_user_run(server_info *sinfo, char *account)
+int check_server_max_user_run(server_info *sinfo, const std::string& account)
   {
-  if (sinfo -> max_user_run == INFINITY ||
-      sinfo->number_of_running_jobs_for_user(std::string(account)) < sinfo -> max_user_run)
+  if (sinfo -> max_user_run == RESC_INFINITY ||
+      sinfo->number_of_running_jobs_for_user(account) < sinfo -> max_user_run)
     return 0;
 
   return SERVER_USER_LIMIT_REACHED;
@@ -295,10 +297,10 @@ int check_server_max_user_run(server_info *sinfo, char *account)
  *   QUEUE_USER_LIMIT_REACHED: if the user has reached their limit
  *
  */
-int check_queue_max_user_run(queue_info *qinfo, char *account)
+int check_queue_max_user_run(queue_info *qinfo, const std::string& account)
   {
-  if (qinfo -> max_user_run == INFINITY ||
-      count_by_user(qinfo -> running_jobs, account) < qinfo -> max_user_run)
+  if (qinfo -> max_user_run == RESC_INFINITY ||
+      qinfo->number_of_running_jobs_for_user(account) < qinfo -> max_user_run)
     return 0;
 
   return QUEUE_USER_LIMIT_REACHED;
@@ -336,10 +338,11 @@ int check_queue_remote_local(queue_info *qinfo)
  *   QUEUE_GROUP_LIMIT_REACHED: if group is not wihtin limits
  *
  */
-int check_queue_max_group_run(queue_info *qinfo, char *group)
+int check_queue_max_group_run(queue_info *qinfo, const std::string& group)
   {
-  if (qinfo -> max_group_run == INFINITY ||
-      count_by_group(qinfo -> running_jobs, group) < qinfo -> max_group_run)
+  if (qinfo -> max_group_run == RESC_INFINITY ||
+    qinfo->number_of_running_jobs_for_group(group) < qinfo -> max_group_run)
+
     return 0;
 
   return QUEUE_GROUP_LIMIT_REACHED;
@@ -358,18 +361,14 @@ int check_queue_max_group_run(queue_info *qinfo, char *group)
  *   SERVER_GROUP_LIMIT_REACHED : if the limit is reached
  *
  */
-int check_server_max_group_run(server_info *sinfo, char *group)
+int check_server_max_group_run(server_info *sinfo, const std::string& group)
   {
-  if (sinfo -> max_group_run == INFINITY ||
-      sinfo->number_of_running_jobs_for_group(std::string(group)) < sinfo -> max_group_run)
+  if (sinfo -> max_group_run == RESC_INFINITY ||
+      sinfo->number_of_running_jobs_for_group(group) < sinfo -> max_group_run)
     return 0;
 
   return SERVER_GROUP_LIMIT_REACHED;
   }
-
-static int count_queue_procs(queue_info *qinfo);
-static int count_queue_user_procs(queue_info *qinfo, JobInfo *jinfo);
-static int count_queue_group_procs(queue_info *qinfo, JobInfo *jinfo);
 
 int check_queue_proc_limits(queue_info *qinfo, JobInfo *jinfo)
   {
@@ -377,19 +376,19 @@ int check_queue_proc_limits(queue_info *qinfo, JobInfo *jinfo)
   int this_job = spec->total_procs;
   free_parsed_nodespec(spec);
 
-  if (qinfo->max_proc != INFINITY)
+  if (qinfo->max_proc != RESC_INFINITY)
     {
     if (count_queue_procs(qinfo) + this_job > qinfo->max_proc)
       return QUEUE_PROC_LIMIT_REACHED;
     }
 
-  if (qinfo->max_user_proc != INFINITY)
+  if (qinfo->max_user_proc != RESC_INFINITY)
     {
     if (count_queue_user_procs(qinfo,jinfo) + this_job > qinfo->max_user_proc)
       return QUEUE_USER_PROC_LIMIT_REACHED;
     }
 
-  if (qinfo->max_group_proc != INFINITY)
+  if (qinfo->max_group_proc != RESC_INFINITY)
     {
     if (count_queue_group_procs(qinfo,jinfo) + this_job > qinfo->max_group_proc)
       return QUEUE_GROUP_PROC_LIMIT_REACHED;
@@ -434,106 +433,83 @@ int check_dynamic_resources(server_info* sinfo, JobInfo *jinfo)
   return SUCCESS;
   }
 
-/*
- *
- * count_by_user - count the amount of jobs a user has in a job array
- *
- *   jobs - job array
- *   user - the username
- *
- * returns the count
- *
- */
-int count_by_user(JobInfo **jobs, char *user)
-  {
-  int count = 0;  /* the accumulator to count the user's jobs */
-  int i;
 
-  if (jobs != NULL)
+long long int count_by_user(const vector<JobInfo*> &jobs, const std::string &user)
+  {
+  long long int count = 0;
+
+  for (auto i : jobs)
     {
-    for (i = 0; jobs[i] != NULL; i++)
-      if (jobs[i] -> account == user)
-        count++;
+    if (i->account == user)
+      count++;
     }
 
   return count;
   }
 
-/*
- *
- *
- * count_by_group - count number of jobs a group has in job array
- *
- *   jobs - array of jobs
- *   group - group name
- *
- * returns the count
- *
- */
-int count_by_group(JobInfo **jobs, char *group)
+long long int count_by_group(const vector<JobInfo*> &jobs, const std::string &grp)
   {
-  int i;
-  int count = 0;  /* an accumulator to count the group's jobs */
+  long long int count = 0;
 
-  if (jobs != NULL)
+  for (auto i : jobs)
     {
-    for (i = 0; jobs[i] != NULL; i++)
-      {
-      if (jobs[i] -> group == group)
-        count++;
-      }
+    if (i->group == grp)
+      count++;
     }
 
   return count;
   }
 
-static int count_queue_procs(queue_info *qinfo)
+int count_queue_procs(const queue_info *qinfo)
   {
+  Expects(static_cast<size_t>(qinfo->sc.running) == qinfo->running_jobs.size());
+
   int procs = 0;
   for (int i = 0; i < qinfo->sc.running; i++)
-    {
-    pars_spec *spec = parse_nodespec(qinfo->running_jobs[i]->nodespec.c_str());
-    procs += spec->total_procs;
-    free_parsed_nodespec(spec);
-    }
+    procs += qinfo->running_jobs[i]->parsed_nodespec()->total_procs;
 
   return procs;
   }
 
-static int count_queue_user_procs(queue_info *qinfo, JobInfo *jinfo)
+int count_queue_user_procs(const queue_info *qinfo, const std::string& account)
   {
+  Expects(static_cast<size_t>(qinfo->sc.running) == qinfo->running_jobs.size());
+
   int procs = 0;  /* the accumulator to count the user's jobs */
 
   for (int i = 0; i < qinfo->sc.running; i++)
     {
-    if (jinfo->account == qinfo->running_jobs[i]->account)
-      {
-      pars_spec *spec = parse_nodespec(qinfo->running_jobs[i]->nodespec.c_str());
-      procs += spec->total_procs;
-      free_parsed_nodespec(spec);
-      }
+    if (account == qinfo->running_jobs[i]->account)
+      procs += qinfo->running_jobs[i]->parsed_nodespec()->total_procs;
     }
 
   return procs;
   }
 
-static int count_queue_group_procs(queue_info *qinfo, JobInfo *jinfo)
+int count_queue_user_procs(const queue_info *qinfo, const JobInfo *jinfo)
   {
+  return count_queue_user_procs(qinfo,jinfo->account);
+  }
+
+int count_queue_group_procs(const queue_info *qinfo, const std::string& group)
+  {
+  Expects(static_cast<size_t>(qinfo->sc.running) == qinfo->running_jobs.size());
+
   int procs = 0;  /* the accumulator to count the user's jobs */
 
   for (int i = 0; i < qinfo->sc.running; i++)
     {
-    if (jinfo->group == qinfo->running_jobs[i]->group)
-      {
-      pars_spec *spec = parse_nodespec(qinfo->running_jobs[i]->nodespec.c_str());
-      procs += spec->total_procs;
-      free_parsed_nodespec(spec);
-      }
+    if (group == qinfo->running_jobs[i]->group)
+      procs += qinfo->running_jobs[i]->parsed_nodespec()->total_procs;
     }
 
   return procs;
   }
 
+int count_queue_group_procs(const queue_info *qinfo, const JobInfo *jinfo)
+  {
+  return count_queue_group_procs(qinfo,jinfo->group);
+  }
 /*
  *
  * check_ded_time_boundry  - check to see if a job would cross into
@@ -624,7 +600,7 @@ int check_ded_time_queue(queue_info *qinfo)
  */
 int check_queue_max_run(queue_info *qinfo)
   {
-  if (qinfo->max_run == INFINITY)
+  if (qinfo->max_run == RESC_INFINITY)
     return 0;
   else if (qinfo -> max_run > qinfo -> sc.running)
     return 0;
@@ -646,7 +622,7 @@ int check_queue_max_run(queue_info *qinfo)
  */
 int check_server_max_run(server_info *sinfo)
   {
-  if (sinfo -> max_run == INFINITY)
+  if (sinfo -> max_run == RESC_INFINITY)
     return 0;
   else if (sinfo -> max_run > sinfo -> sc.running)
     return 0;

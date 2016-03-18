@@ -102,17 +102,7 @@ using namespace std;
 #include "base/MiscHelpers.h"
 
 
-/*
- *
- * query_jobs - create an array of jobs in a specified queue
- *
- *   pbs_sd - connection to pbs_server
- *   qinfo  - queue to get jobs from
- *
- * returns pointer to the head of a list of jobs
- *
- */
-JobInfo **query_jobs(int pbs_sd, queue_info *qinfo)
+bool query_jobs(int pbs_sd, queue_info *qinfo, vector<JobInfo*>& result)
   {
   /* pbs_selstat() takes a linked list of attropl structs which tell it
    * what information about what jobs to return.  We want all jobs which are
@@ -121,7 +111,7 @@ JobInfo **query_jobs(int pbs_sd, queue_info *qinfo)
 
   struct attropl opl =
     {
-    NULL, (char*)ATTR_q, NULL, NULL, EQ
+      NULL, const_cast<char*>(ATTR_q), NULL, NULL, EQ
     };
 
   /* linked list of jobs returned from pbs_selstat() */
@@ -132,14 +122,10 @@ JobInfo **query_jobs(int pbs_sd, queue_info *qinfo)
 
   struct batch_status *cur_job;
 
-  /* array of internal scheduler structures for jobs */
-  JobInfo **jinfo_arr;
-
   /* current job in jinfo_arr array */
   JobInfo *jinfo;
 
   /* number of jobs in jinfo_arr */
-  int num_jobs = 0;
   int i;
 
   opl.value = qinfo -> name;
@@ -149,23 +135,7 @@ JobInfo **query_jobs(int pbs_sd, queue_info *qinfo)
     if (pbs_errno > 0)
       fprintf(stderr, "pbs_selstat failed: %d\n", pbs_errno);
 
-    return NULL;
-    }
-
-  cur_job = jobs;
-
-  while (cur_job != NULL)
-    {
-    num_jobs++;
-    cur_job = cur_job -> next;
-    }
-
-  /* allocate enough space for all the jobs and the NULL sentinal */
-  if ((jinfo_arr = (JobInfo **) malloc(sizeof(JobInfo*) * (num_jobs + 1))) == NULL)
-    {
-    perror("Memory allocation error");
-    pbs_statfree(jobs);
-    return NULL;
+    return false;
     }
 
   cur_job = jobs;
@@ -175,8 +145,12 @@ JobInfo **query_jobs(int pbs_sd, queue_info *qinfo)
     if ((jinfo = new JobInfo(cur_job,qinfo)) == NULL)
       {
       pbs_statfree(jobs);
-      free_jobs(jinfo_arr);
-      return NULL;
+
+      for (auto j : result)
+        delete j;
+      result.clear();
+
+      return false;
       }
 
     /* get the fair share group info node */
@@ -189,16 +163,13 @@ JobInfo **query_jobs(int pbs_sd, queue_info *qinfo)
     if (jinfo -> state != JobQueued)
       jinfo -> can_not_run = true;
 
-    jinfo_arr[i] = jinfo;
+    result.push_back(jinfo);
 
     cur_job = cur_job -> next;
     }
 
-  jinfo_arr[i] = NULL;
-
   pbs_statfree(jobs);
-
-  return jinfo_arr;
+  return true;
   }
 
 /*
@@ -264,29 +235,6 @@ resource_req *find_alloc_resource_req(char *name, resource_req *reqlist)
     }
 
   return resreq;
-  }
-
-/*
- *
- * free_jobs - free an array of jobs
- *
- *   jarr - array of jobs to free
- *
- * returns nothing
- *
- */
-
-void free_jobs(JobInfo **jarr)
-  {
-  int i;
-
-  if (jarr == NULL)
-    return;
-
-  for (i = 0; jarr[i] != NULL; i++)
-    delete jarr[i];
-
-  free(jarr);
   }
 
 /*
@@ -507,7 +455,7 @@ int update_job_comment(int pbs_sd, JobInfo *jinfo, const char *comment)
 
   struct attrl attr =
     {
-    NULL, (char*)ATTR_comment, NULL, NULL, SET
+    NULL, const_cast<char*>(ATTR_comment), NULL, NULL, SET
     };
 
   if (jinfo == NULL)
@@ -532,7 +480,7 @@ int update_job_planned_nodes(int pbs_sd, JobInfo *jinfo, const std::string& node
   {
   struct attrl attr =
     {
-    NULL, (char*)ATTR_planned_nodes, NULL, NULL, SET
+    NULL, const_cast<char*>(ATTR_planned_nodes), NULL, NULL, SET
     };
 
   if (jinfo == NULL)
@@ -540,7 +488,7 @@ int update_job_planned_nodes(int pbs_sd, JobInfo *jinfo, const std::string& node
 
   if (jinfo->p_planned_nodes != nodes)
     {
-    attr.value = (char*)nodes.c_str();
+    attr.value = const_cast<char*>(nodes.c_str());
 
     return pbs_alterjob(pbs_sd, const_cast<char*>(jinfo -> job_id.c_str()), &attr, NULL);
     }
@@ -552,7 +500,7 @@ int update_job_waiting_for(int pbs_sd, JobInfo *jinfo, const std::string& waitin
   {
   struct attrl attr =
     {
-    NULL, (char*)ATTR_waiting_for, NULL, NULL, SET
+    NULL, const_cast<char*>(ATTR_waiting_for), NULL, NULL, SET
     };
 
   if (jinfo == NULL)
@@ -560,7 +508,7 @@ int update_job_waiting_for(int pbs_sd, JobInfo *jinfo, const std::string& waitin
 
   if (jinfo->p_waiting_for != waiting)
     {
-    attr.value = (char*)waiting.c_str();
+    attr.value = const_cast<char*>(waiting.c_str());
 
     return pbs_alterjob(pbs_sd, const_cast<char*>(jinfo -> job_id.c_str()), &attr, NULL);
     }
@@ -572,7 +520,7 @@ int update_job_earliest_start(int pbs_sd, JobInfo *jinfo, time_t earliest_start)
   {
   struct attrl attr =
     {
-    NULL, (char*)ATTR_planned_start, NULL, NULL, SET
+    NULL, const_cast<char*>(ATTR_planned_start), NULL, NULL, SET
     };
 
   if (jinfo == NULL)
@@ -599,7 +547,7 @@ int update_job_fairshare(int pbs_sd, JobInfo *jinfo, double fairshare)
 
   struct attrl attr =
     {
-    NULL, (char*)ATTR_fairshare_cost, NULL, NULL, SET
+    NULL, const_cast<char*>(ATTR_fairshare_cost), NULL, NULL, SET
     };
 
   if (jinfo == NULL)
@@ -627,88 +575,33 @@ int update_job_fairshare(int pbs_sd, JobInfo *jinfo, double fairshare)
  * returns nothing;
  *
  */
-void update_jobs_cant_run(int pbs_sd, JobInfo **jinfo_arr, JobInfo *start,
+void update_jobs_cant_run(int pbs_sd, vector<JobInfo*>& jinfo_arr, JobInfo *start,
                           const char *comment, int start_where)
   {
-  int i = 0;
-
-  if (jinfo_arr != NULL)
+  size_t i = 0;
+  /* We are not starting at the front of the array, so we need to find the
+   * element to start with.
+   */
+  if (start != NULL)
     {
-    /* We are not starting at the front of the array, so we need to find the
-     * element to start with.
-     */
-    if (start != NULL)
-      {
-      for (; jinfo_arr[i] != NULL && jinfo_arr[i] != start; i++)
-        ;
-      }
-    else
-      i = 0;
+    for (; i < jinfo_arr.size() && jinfo_arr[i] != start; i++);
+    }
+  else
+    i = 0;
 
-    if (jinfo_arr[i] != NULL)
-      {
-      if (start_where == START_BEFORE_JOB)
-        i--;
-      else if (start_where == START_AFTER_JOB)
-        i++;
+  if (i < jinfo_arr.size())
+    {
+    if (start_where == START_BEFORE_JOB)
+      i--;
+    else if (start_where == START_AFTER_JOB)
+      i++;
 
-      for (; jinfo_arr[i] != NULL; i++)
-        {
-        jinfo_arr[i] -> can_not_run = true;
-        update_job_comment(pbs_sd, jinfo_arr[i], comment);
-        }
+    for (; i < jinfo_arr.size(); i++)
+      {
+      jinfo_arr[i] -> can_not_run = true;
+      update_job_comment(pbs_sd, jinfo_arr[i], comment);
       }
     }
-  }
-
-/*
- *
- * job_filter - filters jobs on specified argument
- *
- *   jobs - array of jobs to filter through
- *   size - amount of jobs in array
- *   filter_func - pointer to a function that will filter
- *  - returns 1: job will be added to new array
- *  - returns 0: job will not be added to new array
- *   arg - an extra arg to pass to filter_func
- *
- * returns pointer to filtered list
- *
- * NOTE: this function allocates a new array
- *
- * filter_func prototype: int func( job_info *, void * )
- *
- */
-JobInfo **job_filter(JobInfo** jobs, int size,
-                      int (*filter_func)(JobInfo*, void*), void *arg)
-  {
-  JobInfo **new_jobs = NULL;   /* new array of jobs */
-  int i, j = 0;
-
-  if ((new_jobs = (JobInfo**)malloc((size + 1) * sizeof(JobInfo *))) == NULL)
-    {
-    perror("Memory allocation error");
-    return NULL;
-    }
-
-  for (i = 0; i < size; i++)
-    {
-    if (filter_func(jobs[i], arg))
-      {
-      new_jobs[j] = jobs[i];
-      j++;
-      }
-    }
-
-  if ((new_jobs = (JobInfo**) realloc(new_jobs, (j + 1) * sizeof(JobInfo *))) == NULL)
-    {
-    perror("Memory Allocation Error");
-    return NULL;
-    }
-
-  new_jobs[j] = NULL;
-
-  return new_jobs;
   }
 
 /*

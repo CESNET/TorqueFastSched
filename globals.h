@@ -84,8 +84,6 @@
 
 /* information about sorting */
 
-extern const struct sort_info sorting_info[];
-
 /* info to get from mom */
 extern const char *res_to_get[];
 

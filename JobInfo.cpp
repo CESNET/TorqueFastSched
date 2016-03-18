@@ -275,9 +275,8 @@ void JobInfo::plan_on_node(node_info* ninfo, pars_spec_node* spec)
     }
   }
 
-void JobInfo::plan_on_queue(queue_info* qinfo)
-  {
-  }
+void JobInfo::plan_on_queue(queue_info *)
+  { }
 
 void JobInfo::plan_on_server(server_info* sinfo)
   {

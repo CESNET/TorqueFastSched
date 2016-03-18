@@ -82,41 +82,6 @@
 #include "constant.h"
 #include "sort.h"
 
-/*
- *
- * sorting_info[] - holds information about all the different ways you
- *    can sort the jobs
- *
- * Format: { sort_type, config_name, cmp_func_ptr }
- *
- *   sort_type    : an element from the enum sort_type
- *   config_name  : the name which appears in the scheduling policy config
- *           file (sched_config)
- *   cmp_func_ptr : function pointer the qsort compare function
- *    (located in sort.c)
- *
- */
-
-const struct sort_info sorting_info[] =
-  {
-    {
-    NO_SORT, "no_sort", NULL
-    },
-
-  {SHORTEST_JOB_FIRST, "shortest_job_first", cmp_job_cput_asc},
-  {LONGEST_JOB_FIRST, "longest_job_first", cmp_job_cput_dsc},
-  {SMALLEST_MEM_FIRST, "smallest_memory_first", cmp_job_mem_asc},
-  {LARGEST_MEM_FIRST, "largest_memory_first", cmp_job_mem_dsc},
-  {HIGH_PRIORITY_FIRST, "high_priority_first", cmp_job_prio_dsc},
-  {LOW_PRIORITY_FIRST, "low_priority_first", cmp_job_prio_asc},
-  {LARGE_WALLTIME_FIRST, "large_walltime_first", cmp_job_walltime_dsc},
-  {SHORT_WALLTIME_FIRST, "short_walltime_first", cmp_job_walltime_asc},
-  {FAIR_SHARE, "fair_share", cmp_fair_share},
-  {MULTI_SORT, "multi_sort", multi_sort}
-  };
-
-/* number of indicies in the sorting_info array */
-const int num_sorts = sizeof(sorting_info) / sizeof(struct sort_info);
 
 struct config conf;
 

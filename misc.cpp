@@ -140,7 +140,7 @@ void sched_log(int event, int event_class, const char *name, const char *text,..
     va_list extras;
     va_start(extras,text);
     vsprintf(log_buffer,text,extras);
-    log_record(event, event_class, (char*)name, (char*)log_buffer);
+    log_record(event, event_class, const_cast<char*>(name), const_cast<char*>(log_buffer));
     /* TODO quick fix, log_record doesn't take const */
     va_end(extras);
     }
@@ -624,7 +624,7 @@ int cloud_check(JobInfo *jinfo)
           }
         }
 
-      if (is_users_in_group(group,(char*)jowner.c_str()) != 0)
+      if (is_users_in_group(group,const_cast<char*>(jowner.c_str())) != 0)
         goto perm_done;
 
       jinfo->can_never_run = true;

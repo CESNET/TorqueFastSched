@@ -84,10 +84,12 @@
 #include "data_types.h"
 #include <string>
 
+#include <vector>
+
 /*
  *      query_jobs - create an array of jobs in a specified queue
  */
-JobInfo **query_jobs(int pbs_sd, queue_info *qinfo);
+bool query_jobs(int pbs_sd, queue_info *qinfo, std::vector<JobInfo*>& result);
 
 /*
  * query_job_info - takes info from a batch_status about a job and puts
@@ -119,24 +121,6 @@ resource_req *find_alloc_resource_req(char *name, resource_req *reqlist);
 
 /* Clone a resource list */
 resource_req *clone_resource_req_list(resource_req *list);
-
-/*
- * free_job_info - free all the memory used by a job_info structure
- */
-
-void free_job_info(JobInfo *jinfo);
-
-/*
- * free_jobs - free an array of jobs
- */
-
-void free_jobs(JobInfo **jarr);
-
-/*
- *      print_job_info - print out a job_info struct
- */
-
-void print_job_info(JobInfo *jinfo, char brief);
 
 /*
  *      set_state - set the state flag in a job_info structure
@@ -171,16 +155,8 @@ int update_job_fairshare(int pbs_sd, JobInfo *jinfo, double fairshare);
 /*
  *      update_jobs_cant_run - update an array of jobs which can not run
  */
-void update_jobs_cant_run(int pbs_sd, JobInfo **jinfo_arr, JobInfo *start,
+void update_jobs_cant_run(int pbs_sd, std::vector<JobInfo*>& jinfo_arr, JobInfo *start,
                           const char *comment, int start_where);
-
-/*
- * job_filter - filters jobs on specified argument
- * NOTE: this function allocates a new array
- * filter_func prototype: int func( job_info *, void * )
- */
-JobInfo **job_filter(JobInfo** jobs, int size,
-                      int (*filter_func)(JobInfo*, void*), void *arg);
 
 /*
  *      free_resource_req_list - frees memory used by a resource_req list
@@ -193,9 +169,5 @@ void free_resource_req_list(resource_req *list);
  */
 int translate_job_fail_code(int fail_code, char *comment_msg, char *log_msg);
 
-/*
- *      calc_assn_resource - calcualte the assigned resource in a job array
- */
-int calc_assn_resource(JobInfo **jinfo_arr, const char *resstr);
 
 #endif

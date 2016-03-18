@@ -122,9 +122,8 @@ void decay_fairshare_trees();
  *      extract_fairshare - extract the first job from the user with the
  *                          least percentage / usage ratio
  */
-JobInfo *extract_fairshare(JobInfo **jobs);
-
 JobInfo *extract_fairshare(server_info *sinfo);
+JobInfo *extract_fairshare(const std::vector<JobInfo*>& jobs);
 
 /*
  *      write_usage - write the usage information to the usage file

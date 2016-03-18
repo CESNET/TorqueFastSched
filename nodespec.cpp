@@ -339,7 +339,7 @@ CheckResult find_nodes(JobInfo *jinfo, const vector<node_info*>& nodes)
   return result;
   }
 
-int check_nodespec(server_info *sinfo, JobInfo *jinfo, int nodecount, node_info **ninfo_arr, int preassign_starving)
+int check_nodespec(server_info *sinfo, JobInfo *jinfo, int nodecount, node_info **ninfo_arr, int )
   {
   vector<node_info*> nodes(&ninfo_arr[0],&ninfo_arr[nodecount]);
 
@@ -391,7 +391,7 @@ int check_nodespec(server_info *sinfo, JobInfo *jinfo, int nodecount, node_info 
         }
 
       jinfo->plan_on_server(sinfo);
-      jinfo->plan_on_queue(jinfo->queue);
+      jinfo->plan_on_queue(jinfo->queue); // TODO proper resource counting on queues
 
       return JOB_SCHEDULED;
       }

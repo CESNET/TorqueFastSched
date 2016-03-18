@@ -226,11 +226,6 @@ int job_is_movable(JobInfo* job)
  */
 JobInfo *next_job(server_info *sinfo, int init)
   {
-  /* cjobs is an array of the queue's job_info arrays.  It is used to cycle
-   * through the jobs returning 1 job from each queue
-   */
-  static JobInfo ***cjobs = NULL;
-
   /* last_queue is the index into a queue array of the last time
    * the function was called
    */
@@ -242,66 +237,10 @@ JobInfo *next_job(server_info *sinfo, int init)
   static int last_job;
 
   JobInfo *rjob = NULL;  /* the job to return */
-  int i;
 
   if (cstat.round_robin)
     {
-    if (init == INITIALIZE)
-      {
-      if (cjobs != NULL)
-        {
-        free(cjobs);
-        cjobs = NULL;
-        }
-
-      /*
-       * cjobs is an array of pointers which will point to each of the job
-       * arrays in each queue
-       */
-      if (cjobs == NULL)
-        {
-        if ((cjobs = (JobInfo ***) malloc(sizeof(JobInfo**) * sinfo -> num_queues)) == NULL)
-          {
-          perror("Memory Allocation Error");
-          return NULL;
-          }
-
-        last_queue = -1;
-
-        last_job = 0;
-
-        for (i = 0; i < sinfo -> num_queues; i++)
-          cjobs[i] = sinfo -> queues[i] -> jobs;
-        }
-      } /* end initalization */
-    else
-      {
-      /* find the next queue to run a job out of */
-      for (i = 0; i < sinfo -> num_queues && rjob == NULL; i++)
-        {
-        /* we have reached the end of the array, cycle back through */
-        if (last_queue == (sinfo -> num_queues - 1))
-          {
-          last_queue = 0;
-          last_job++;
-          }
-        else /* still more queues to go */
-          last_queue++;
-
-        if (cjobs[last_queue] != NULL)
-          {
-          if (cjobs[last_queue][last_job] == NULL)
-            cjobs[last_queue] = NULL;
-          else
-            {
-            if (cstat.fair_share)
-              rjob = extract_fairshare(cjobs[last_queue]);
-            else if (cjobs[last_queue][last_job] -> suitable_for_run())
-              rjob = cjobs[last_queue][last_job];
-            }
-          }
-        }
-      }
+    throw invalid_argument("Round robin job scheduling no longer supported.");
     }
   else if (cstat.by_queue)
     {
@@ -328,22 +267,21 @@ JobInfo *next_job(server_info *sinfo, int init)
         /* check if we have reached the end of a queue and need to find another */
 
         while (last_queue < sinfo -> num_queues &&
-               (sinfo -> queues[last_queue] -> jobs == NULL ||
-                sinfo -> queues[last_queue] -> jobs[last_job] == NULL ||
-                sinfo -> queues[last_queue] -> jobs[last_job] -> can_not_run))
+               (sinfo->queues[last_queue]->jobs.size() == static_cast<size_t>(last_job) ||
+                sinfo->queues[last_queue]->jobs[last_job]->can_not_run))
           {
-          if (sinfo -> queues[last_queue] -> jobs == NULL ||
-              sinfo -> queues[last_queue] -> jobs[last_job] == NULL)
+          if (static_cast<size_t>(last_job) == sinfo->queues[last_queue]->jobs.size())
             {
             last_queue++;
             last_job = 0;
             }
-          else if (sinfo -> queues[last_queue] -> jobs[last_job] -> can_not_run)
+          else if (sinfo->queues[last_queue]->jobs[last_job]->can_not_run)
+            {
             last_job++;
+            }
           }
 
-        if (last_queue == sinfo -> num_queues ||
-            sinfo -> queues[last_queue] == NULL)
+        if (last_queue == sinfo -> num_queues || sinfo -> queues[last_queue] == NULL)
           rjob = NULL;
         else
           {
@@ -367,13 +305,13 @@ JobInfo *next_job(server_info *sinfo, int init)
         {
         last_job++;
 
-        while (sinfo -> jobs[last_job] != NULL &&
-               sinfo -> jobs[last_job] -> can_not_run)
-          {
-          last_job++;
-          }
+        while (sinfo->jobs.size() > static_cast<size_t>(last_job) && sinfo->jobs[last_job]->can_not_run)
+          ++last_job;
 
-        rjob = sinfo -> jobs[last_job];
+        if (static_cast<size_t>(last_job) == sinfo->jobs.size())
+          rjob = NULL;
+        else
+          rjob =  sinfo->jobs[last_job];
         }
       }
     }

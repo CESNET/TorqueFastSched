@@ -1,34 +1,9 @@
 #include <unordered_map>
 
 #include "ServerInfo.h"
+#include "check.h"
 
 using namespace std;
-
-long long int count_by_user(const vector<JobInfo*> &jobs, const std::string &user)
-  {
-  long long int count = 0;
-
-  for (auto i : jobs)
-    {
-    if (i->account == user)
-      count++;
-    }
-
-  return count;
-  }
-
-long long int count_by_group(const vector<JobInfo*> &jobs, const std::string &grp)
-  {
-  long long int count = 0;
-
-  for (auto i : jobs)
-    {
-    if (i->group == grp)
-      count++;
-    }
-
-  return count;
-  }
 
 void server_info::recount_installing_nodes()
   {
@@ -43,7 +18,7 @@ void server_info::recount_installing_nodes()
 
 bool server_info::installing_nodes_overlimit()
   {
-  if (this->max_installing_nodes == INFINITY)
+  if (this->max_installing_nodes == RESC_INFINITY)
     return false;
 
   return this->installing_node_count >= this->max_installing_nodes;
@@ -53,13 +28,12 @@ void server_info::regenerate_jobs_by_owner()
   {
   jobs_by_owner.clear();
 
-  for (size_t i = 0; this->jobs[i] != NULL; ++i)
+  // sort jobs into deques based on owner
+  for (auto j : this->jobs)
     {
-    auto el = jobs_by_owner.insert(make_pair(this->jobs[i]->account,deque<JobInfo*>{this->jobs[i]}));
-    if (el.second == false)
-      {
-      el.first->second.push_back(this->jobs[i]);
-      }
+    auto el = jobs_by_owner.insert(make_pair(j->account,deque<JobInfo*>{j}));
+    if (el.second == false) // if the users record already exists
+      el.first->second.push_back(j);
     }
 
   // sort the jobs for each user
@@ -87,7 +61,7 @@ void server_info::regenerate_jobs_by_owner()
     }
   }
 
-void server_info::update_on_jobrun(JobInfo *j)
+void server_info::update_on_job_run(JobInfo *j)
   {
   this -> sc.running++;
   this -> sc.queued--;
@@ -98,12 +72,13 @@ void server_info::update_on_jobrun(JobInfo *j)
     if (this->nodes[i]->has_assignment())
       j->plan_on_node(this->nodes[i],this->nodes[i]->get_assignment());
 
+  // add this job into the running jobs array and update caches
   this->running_jobs.push_back(j);
 
   auto grp = running_jobs_by_group.find(j->group);
   if (grp != running_jobs_by_group.end())
     {
-    grp->second++;
+    grp->second += 1;
     }
   else
     {
@@ -113,7 +88,7 @@ void server_info::update_on_jobrun(JobInfo *j)
   auto usr = running_jobs_by_user.find(j->account);
   if (usr != running_jobs_by_user.end())
     {
-    usr->second++;
+    usr->second += 1;
     }
   else
     {

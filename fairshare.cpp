@@ -210,58 +210,42 @@ JobInfo *extract_fairshare(server_info *sinfo)
   return max;
   }
 
-/*
- *
- * extract_fairshare - extract the first job from the user with the
- *       least percentage / usage ratio
- *
- *   jobs - array of jobs to search through
- *
- * return the found job or NULL on error
- *
- */
-JobInfo *extract_fairshare(JobInfo **jobs)
+JobInfo *extract_fairshare(const std::vector<JobInfo*>& jobs)
   {
-  JobInfo *max = NULL;  /* job with the max shares / percentage */
-  float max_value;  /* max shares / percentage */
-  float cur_value;  /* the current shares / percentage value */
-  int max_priority;
-  int i;
+  JobInfo *max = nullptr; /* job with the max shares / percentage */
+  float max_value = -1;   /* max shares / percentage */
+  int max_priority = -1;
+  float cur_value;        /* the current shares / percentage value */
 
-  if (jobs != NULL)
+  for (auto j : jobs)
     {
-    max_value = -1;
-    max_priority = -1;
+    if (!j->suitable_for_run() || j->state == JobRunning) continue;
 
-    for (i = 0; jobs[i] != NULL; i++)
+    if (conf.priority_fairshare)
       {
-      if (!jobs[i]->suitable_for_run() || jobs[i]->state == JobRunning) continue;
+      if (j->queue->priority < max_priority) continue;
 
-      if (conf.priority_fairshare)
+      // reset max fairshare when queue priority increased
+      if (j->queue->priority > max_priority)
         {
-        if (jobs[i]->queue->priority < max_priority) continue;
-
-        // reset max fairshare when queue priority increased
-        if (jobs[i]->queue->priority > max_priority)
-          {
-          max_value = -1;
-          }
-
-        max_priority = jobs[i]->queue->priority;
+        max_value = -1;
         }
 
-      cur_value = jobs[i] -> ginfo -> percentage / jobs[i] -> ginfo -> temp_usage;
+      max_priority = j->queue->priority;
+      }
 
-      if (max_value < cur_value)
-        {
-        max = jobs[i];
-        max_value = cur_value;
-        }
+    cur_value = j -> ginfo -> percentage / j -> ginfo -> temp_usage;
+
+    if (max_value < cur_value)
+      {
+      max = j;
+      max_value = cur_value;
       }
     }
 
   return max;
   }
+
 
 /*
  *

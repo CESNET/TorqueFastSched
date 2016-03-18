@@ -96,25 +96,30 @@ struct repository_alternatives **dup_bootable_alternatives(struct repository_alt
   if (old==NULL) return NULL;
 
   for(num=0;old[num]!=NULL;num++){}
-  if ((r = (struct repository_alternatives **)
-             malloc( sizeof(struct repository_alternatives*)
-		                   * (num + 1) ) ) == NULL ) {
-            log_err(errno, (char*)"get_bootable_alternatives", (char*)"Error allocating memory");
-            return NULL;
-  }
-  for(num=0;old[num]!=NULL;num++){
-      r[num]=(repository_alternatives*) malloc(sizeof(struct repository_alternatives));
-      if (r[num]==NULL) { 
-	  log_err(errno, (char*)"get_bootable_alternatives", (char*)"Error allocating memory");
-	  return NULL; 
+  if ((r = (struct repository_alternatives **) malloc( sizeof(struct repository_alternatives*) * (num + 1) ) ) == NULL )
+    {
+    log_err(errno, const_cast<char*>("get_bootable_alternatives"), const_cast<char*>("Error allocating memory"));
+    return NULL;
+    }
+
+  for(num=0;old[num]!=NULL;num++)
+    {
+    r[num]=(repository_alternatives*) malloc(sizeof(struct repository_alternatives));
+    if (r[num]==NULL)
+      {
+	    log_err(errno, const_cast<char*>("get_bootable_alternatives"), const_cast<char*>("Error allocating memory"));
+	    return NULL;
       }
-      r[num]->r_name=strdup(old[num]->r_name);
-      if (old[num]->r_proplist)
-	  r[num]->r_proplist=strdup(old[num]->r_proplist);
-      else
-	  r[num]->r_proplist=NULL;
-      r[num]->r_mark=old[num]->r_mark;
+
+    r[num]->r_name=strdup(old[num]->r_name);
+    if (old[num]->r_proplist)
+	    r[num]->r_proplist=strdup(old[num]->r_proplist);
+    else
+	    r[num]->r_proplist=NULL;
+
+    r[num]->r_mark=old[num]->r_mark;
   }
+
   r[num]=NULL;
 
   return r;

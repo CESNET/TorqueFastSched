@@ -103,39 +103,36 @@ int is_ok_to_run_job(server_info *sinfo, queue_info *qinfo,
 int check_run_job(JobInfo *job, void *arg);
 
 /*
- *      count_by_user - count the amount of jobs a user has in a job array
- */
-int count_by_user(JobInfo **jobs, char *user);
-
-/*
  *      check_server_max_group_run - check to see if group is within their
  *                                   server running limits
  */
-int check_server_max_group_run(server_info *sinfo, char *group);
+int check_server_max_group_run(server_info *sinfo, const std::string& group);
 
 /*
  *      check_queue_max_user_run - check if the user is within queue
  *                                      user run limits
  */
-int check_queue_max_user_run(queue_info *qinfo, char *account);
+int check_queue_max_user_run(queue_info *qinfo, const std::string& account);
 
-/*
- *      count_by_group - count number of jobs a group has in job array
- */
-int count_by_group(JobInfo **jobs, char *group);
-
+long long int count_by_group(const std::vector<JobInfo*> &jobs, const std::string &group);
+long long int count_by_user(const std::vector<JobInfo*> &jobs, const std::string &account);
+int count_queue_procs(const queue_info *qinfo);
+int count_queue_user_procs(const queue_info *qinfo, const JobInfo *jinfo);
+int count_queue_user_procs(const queue_info *qinfo, const std::string& user_name);
+int count_queue_group_procs(const queue_info *qinfo, const JobInfo *jinfo);
+int count_queue_group_procs(const queue_info *qinfo, const std::string& group_name);
 
 /*
  *      check_server_max_user_run - check if the user is within server
  *                                      user run limits
  */
-int check_server_max_user_run(server_info *sinfo, char *account);
+int check_server_max_user_run(server_info *sinfo, const std::string& account);
 
 /*
  *      check_queue_max_group_run - check to see if the group is within their
  *                                      queue running limits
  */
-int check_queue_max_group_run(queue_info *qinfo, char *group);
+int check_queue_max_group_run(queue_info *qinfo, const std::string& group);
 
 int check_queue_proc_limits(queue_info *qinfo, JobInfo *jinfo);
 

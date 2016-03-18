@@ -80,110 +80,79 @@
 #ifndef SORT_H
 #define SORT_H
 
-/*
+#include "data_types.h"
+
+/* for SORT_BY */
+enum sort_type
+  {
+  NO_SORT,
+  SHORTEST_JOB_FIRST,
+  LONGEST_JOB_FIRST,
+  SMALLEST_MEM_FIRST,
+  LARGEST_MEM_FIRST,
+  HIGH_PRIORITY_FIRST,
+  LOW_PRIORITY_FIRST,
+  LARGE_WALLTIME_FIRST,
+  SHORT_WALLTIME_FIRST,
+  FAIR_SHARE,
+  MULTI_SORT
+  };
+
+struct sort_info
+  {
+  enum sort_type sort;
+  const char *config_name;
+  std::function<bool(const JobInfo*,const JobInfo*)> cmp_func;
+  };
+
+extern const struct sort_info sorting_info[];
+
+/** Sort jobs by requested walltime in ascending order.
  *
- *      cmp_queue_prio_dsc - compare function used by qsort to sort queues
- *                           by decending priority
- *
+ *  No walltime requested == infinite walltime.
  */
-int cmp_queue_prio_dsc(const void *q1, const void *q2);
+bool cmp_job_walltime_asc(const JobInfo *j1, const JobInfo *j2);
 
-/*
+/** Sort jobs by requesetd walltime in descending order
  *
- *      cmp_queue_prio_asc - compare function used by qsort to sort queues
- *                           by ascending priority
- *
+ *  No walltime requested == infinite walltime.
  */
-int cmp_queue_prio_asc(const void *q1, const void *q2);
+bool cmp_job_walltime_dsc(const JobInfo *j1, const JobInfo *j2);
 
-/*
- *      cmp_job_walltime_asc - sort jobs by requested walltime
- *                                      in ascending order.
+/** Sort jobs by requested cput in ascending order
  */
-int cmp_job_walltime_asc(const void *j1, const void *j2);
+bool cmp_job_cput_asc(const JobInfo *j1, const JobInfo *j2);
 
-/*
- *      cmp_job_walltime_dsc - sort jobs by requested walltime
- *                                      in ascending order.
+/** Sort jobs by requested cput in descending order
  */
-int cmp_job_walltime_dsc(const void *j1, const void *j2);
+bool cmp_job_cput_dsc(const JobInfo *j1, const JobInfo *j2);
 
-
-/*
- *
- *      cmp_job_cput_asc - compare function used by qsort to sort the jobs by
- *                         requested cput time in ascending order.
- *
+/** Sort jobs by requested memory in ascending order
  */
-int cmp_job_cput_asc(const void *j1, const void *j2);
+bool cmp_job_mem_asc(const JobInfo *j1, const JobInfo *j2);
 
-/*
- *
- *      cmp_job_cput_dsc - compare function used by qsort to sort the jobs by
- *                         requested cput time in descending order.
- *
+/** Sort jobs by requested memory in descending order
  */
-int cmp_job_cput_dsc(const void *j1, const void *j2);
+bool cmp_job_mem_dsc(const JobInfo *j1, const JobInfo *j2);
 
-/*
- *
- *      cmp_job_mem_asc -  compare function used by qsort to sort the jobs by
- *                         requested mem time in ascending order.
- *
+/** Sort jobs by ascending job priority
  */
-int cmp_job_mem_asc(const void *j1, const void *j2);
+bool cmp_job_prio_asc(const JobInfo *j1, const JobInfo *j2);
 
-/*
- *
- *      cmp_job_mem_dsc -  compare function used by qsort to sort the jobs by
- *                         requested mem time in descending order.
- *
+/** Sort jobs by descending job priority
  */
-int cmp_job_mem_dsc(const void *j1, const void *j2);
+bool cmp_job_prio_dsc(const JobInfo *j1, const JobInfo *j2);
 
-/*
- *
- *      cmp_job_prio_asc - compare function used by qsort to sort jobs
- *                         by ascending priority
- *
+/** Sort jobs by fairshare user priority (share)
  */
-int cmp_job_prio_asc(const void *j1, const void *j2);
+bool cmp_fair_share(const JobInfo *j1, const JobInfo *j2);
 
-/*
- *
- *      cmp_job_prio_dsc - compare function used by qsort to sort jobs
- *                         by descending priority
- *
+/** A multi-keyed sort compare function
  */
-int cmp_job_prio_dsc(const void *j1, const void *j2);
+bool multi_sort(const JobInfo *j1, const JobInfo *j2);
 
-/*
- *      cmp_fair_share - compare function for the fair share algorithm
+/** Entry point for job sort
  */
-int cmp_fair_share(const void *j1, const void *j2);
-
-
-/*
- *      multi_sort - a multi keyed sortint compare function
- */
-int multi_sort(const void *j1, const void *j2);
-
-/*
- *
- *      cmp_sort - entrypoint into job sort used by qsort
- */
-int cmp_sort(const void *v1, const void *v2);
-
-/** Compare two nodes using their magrathea state
- */
-int cmp_magrathea(const void *v1, const void *v2);
-
-/** Sort nodes using the given comparison function
- *
- * @param sinfo Server info containing the nodes
- * @param cmp Comparison function
- */
-void sort_nodes(server_info *sinfo, int (*cmp)(const void*, const void*));
-
+bool cmp_sort(const JobInfo *v1, const JobInfo *v2);
 
 #endif

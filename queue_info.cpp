@@ -82,15 +82,142 @@
 #include <string.h>
 #include "torque.h"
 #include "queue_info.h"
-#include "constant.h"
 #include "misc.h"
 #include "check.h"
-#include "config.h"
 #include "globals.h"
 
-#include "base/MiscHelpers.h"
+using namespace std;
+
 using namespace Scheduler;
 using namespace Core;
+
+void  queue_info::update_on_job_run(JobInfo *j)
+  {
+  this -> sc.running++;
+  this -> sc.queued--;
+
+  // add this job into the running jobs array and update caches
+  this->running_jobs.push_back(j);
+
+  // number of running jobs per group
+  auto grp = running_jobs_by_group.find(j->group);
+  if (grp != running_jobs_by_group.end())
+    {
+    grp->second += 1;
+    }
+  else
+    {
+    running_jobs_by_group.insert(make_pair(j->group,count_by_group(this->running_jobs,j->group)));
+    }
+
+  // number of running jobs per user
+  auto usr = running_jobs_by_user.find(j->account);
+  if (usr != running_jobs_by_user.end())
+    {
+    usr->second += 1;
+    }
+  else
+    {
+    running_jobs_by_user.insert(make_pair(j->account,count_by_user(this->running_jobs,j->account)));
+    }
+
+  // number of used cores
+  if (running_cores.first == true)
+    {
+    running_cores.second += j->parsed_nodespec()->total_procs;
+    }
+  else
+    {
+    running_cores.first = true;
+    running_cores.second = count_queue_procs(this);
+    }
+
+  // number of used cores per group
+  auto grpcore = running_cores_by_group.find(j->group);
+  if (grpcore != running_cores_by_group.end())
+    {
+    grpcore->second += j->parsed_nodespec()->total_procs;
+    }
+  else
+    {
+    running_cores_by_group.insert(make_pair(j->group,count_queue_group_procs(this,j)));
+    }
+
+  // number of used cores per user
+  auto usrcore = running_cores_by_user.find(j->account);
+  if (usrcore != running_cores_by_user.end())
+    {
+    usrcore->second += j->parsed_nodespec()->total_procs;
+    }
+  else
+    {
+    running_cores_by_user.insert(make_pair(j->account,count_queue_user_procs(this,j)));
+    }
+  }
+
+
+long long int queue_info::number_of_running_jobs_for_group(const string& groupname) const
+  {
+  auto i = running_jobs_by_group.find(groupname);
+  if (i != running_jobs_by_group.end())
+    {
+    return i->second;
+    }
+  else
+    {
+    return running_jobs_by_group.insert(make_pair(groupname,count_by_group(this->running_jobs,groupname))).first->second;
+    }
+  }
+
+long long int queue_info::number_of_running_jobs_for_user(const std::string& username) const
+  {
+  auto i = running_jobs_by_user.find(username);
+  if (i != running_jobs_by_user.end())
+    {
+    return i->second;
+    }
+  else
+    {
+    return running_jobs_by_user.insert(make_pair(username,count_by_user(this->running_jobs,username))).first->second;
+    }
+  }
+
+long long int queue_info::number_of_running_cores() const
+  {
+  if (!running_cores.first)
+    {
+    running_cores.first = true;
+    running_cores.second = count_queue_procs(this);
+    }
+
+  return running_cores.second;
+  }
+
+long long int queue_info::number_of_running_cores_for_group(const std::string& group_name) const
+  {
+  auto i = running_cores_by_group.find(group_name);
+  if (i != running_cores_by_group.end())
+    {
+    return i->second;
+    }
+  else
+    {
+    return running_jobs_by_group.insert(make_pair(group_name,count_queue_group_procs(this,group_name))).first->second;
+    }
+  }
+
+long long int queue_info::number_of_running_cores_for_user(const std::string& user_name) const
+  {
+  auto i = running_cores_by_user.find(user_name);
+  if (i != running_cores_by_user.end())
+    {
+    return i->second;
+    }
+  else
+    {
+    return running_jobs_by_user.insert(make_pair(user_name,count_queue_user_procs(this,user_name))).first->second;
+    }
+  }
 
 /*
  *
@@ -162,12 +289,13 @@ queue_info **query_queues(int pbs_sd, server_info *sinfo)
     if ((qinfo = query_queue_info(cur_queue, sinfo)) == NULL)
       {
       pbs_statfree(queues);
-      free_queues(qinfo_arr, 1);
+      free_queues(qinfo_arr, true);
       return NULL;
       }
 
     /* get all the jobs which reside in the queue */
-    qinfo -> jobs = query_jobs(pbs_sd, qinfo);
+    if (!query_jobs(pbs_sd, qinfo, qinfo->jobs))
+      sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_SERVER, qinfo->name, "Error while decoding jobs." );
 
     /* check if the queue is a dedicated time queue */
     if (conf.ded_prefix[0] != '\0')
@@ -175,8 +303,7 @@ queue_info **query_queues(int pbs_sd, server_info *sinfo)
         qinfo -> dedtime_queue = 1;
 
     if (qinfo -> is_global)
-      sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_QUEUE,
-      qinfo->name, "Marked as global.");
+      sched_log(PBSEVENT_DEBUG2, PBS_EVENTCLASS_QUEUE, qinfo->name, "Marked as global.");
 
     /* check if it is OK for jobs to run in the queue */
     ret = is_ok_to_run_queue(qinfo);
@@ -192,9 +319,12 @@ queue_info **query_queues(int pbs_sd, server_info *sinfo)
       update_jobs_cant_run(pbs_sd, qinfo -> jobs, NULL, comment, START_WITH_JOB);
       }
 
-    count_states(qinfo -> jobs, &(qinfo -> sc));
+    count_states(qinfo->jobs, &(qinfo -> sc));
 
-    qinfo -> running_jobs = job_filter(qinfo -> jobs, qinfo -> sc.total, check_run_job, NULL);
+    qinfo->running_jobs.clear();
+    qinfo->running_jobs.reserve(qinfo->jobs.size()/2);
+    copy_if(begin(qinfo->jobs),end(qinfo->jobs),back_inserter(qinfo->running_jobs),
+            [](JobInfo *j) { return j->state == JobRunning; });
 
     qinfo_arr[i] = qinfo;
 
@@ -266,7 +396,7 @@ queue_info *query_queue_info(struct batch_status *queue, server_info *sinfo)
     if (!strcmp(attrp -> name, ATTR_start))   /* started */
       {
       if (!strcmp(attrp -> value, "True"))
-        qinfo -> is_started = 1;
+        qinfo -> is_started = true;
       }
     else if (!strcmp(attrp -> name, ATTR_maxrun))  /* max_running */
       {
@@ -413,10 +543,10 @@ queue_info *new_queue_info()
   {
   queue_info *qinfo;
 
-  if ((qinfo = (queue_info*) malloc(sizeof(queue_info))) == NULL)
+  if ((qinfo = new (nothrow) queue_info) == NULL)
     return NULL;
 
-  qinfo -> is_started  = 0;
+  qinfo -> is_started  = false;
 
   qinfo -> is_exec  = 0;
 
@@ -434,23 +564,19 @@ queue_info *new_queue_info()
 
   init_state_count(&(qinfo -> sc));
 
-  qinfo -> max_run  = INFINITY;
+  qinfo -> max_run  = RESC_INFINITY;
 
-  qinfo -> max_user_run  = INFINITY;
+  qinfo -> max_user_run  = RESC_INFINITY;
 
-  qinfo -> max_group_run = INFINITY;
+  qinfo -> max_group_run = RESC_INFINITY;
 
-  qinfo -> max_proc = INFINITY;
+  qinfo -> max_proc = RESC_INFINITY;
 
-  qinfo -> max_user_proc = INFINITY;
+  qinfo -> max_user_proc = RESC_INFINITY;
 
-  qinfo -> max_group_proc = INFINITY;
+  qinfo -> max_group_proc = RESC_INFINITY;
 
   qinfo -> name   = NULL;
-
-  qinfo -> jobs   = NULL;
-
-  qinfo -> running_jobs  = NULL;
 
   qinfo -> server  = NULL;
 
@@ -477,7 +603,7 @@ queue_info *new_queue_info()
  *
  */
 
-void free_queues(queue_info **qarr, char free_jobs_too)
+void free_queues(queue_info **qarr, bool free_jobs_too)
   {
   int i;
 
@@ -487,13 +613,13 @@ void free_queues(queue_info **qarr, char free_jobs_too)
   for (i = 0; qarr[i] != NULL; i++)
     {
     if (free_jobs_too)
-      free_jobs(qarr[i] -> jobs);
+      for (JobInfo* j : qarr[i]->jobs)
+        delete j;
 
     free_queue_info(qarr[i]);
     }
 
   free(qarr);
-
   }
 
 /** Update queue on job move
@@ -512,22 +638,6 @@ void update_queue_on_move(queue_info *qinfo, JobInfo *jinfo)
 
 /*
  *
- * update_queue_on_run - update the information kept in a qinfo structure
- *      when a job is run
- *
- *   qinfo - the queue to update
- *   jinfo - the job that was run
- *
- * returns nothing;
- *
- */
-void update_queue_on_run(queue_info *qinfo, JobInfo *jinfo)
-  {
-  jinfo->plan_on_queue(qinfo);
-  }
-
-/*
- *
  * free_queue_info - free space used by a queue info struct
  *
  *   qinfo - queue to free
@@ -538,10 +648,9 @@ void update_queue_on_run(queue_info *qinfo, JobInfo *jinfo)
 void free_queue_info(queue_info *qinfo)
   {
   free(qinfo -> name);
-  free(qinfo -> running_jobs);
   free(qinfo -> excl_nodes);
   free(qinfo -> fairshare_tree);
-  free(qinfo);
+  delete qinfo;
   }
 
 /*

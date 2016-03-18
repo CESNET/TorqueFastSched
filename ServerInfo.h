@@ -16,9 +16,8 @@
 struct server_info
   {
 public:
-  void update_on_jobrun(JobInfo *j);
-  long long int number_of_running_jobs_for_group(const std::string& groupname) const;
-  long long int number_of_running_jobs_for_user(const std::string& username) const;
+  void update_on_job_run(JobInfo *j);
+
 
   char *name;   /* name of server */
 
@@ -31,7 +30,7 @@ public:
   int num_nodes;  /* number of nodes associated with the server */
   state_count sc;  /* number of jobs in each state */
   queue_info **queues;  /* array of queues */
-  JobInfo **jobs;  /* array of jobs on the server */
+  std::vector<JobInfo*> jobs; /* array of all jobs on the server */
   std::vector<JobInfo*> running_jobs; /* array of jobs in the running state */
 
   node_info **nodes;  /* array of nodes associated with the server */
@@ -52,6 +51,9 @@ public:
 
   std::unordered_map<std::string,std::deque<JobInfo *>> jobs_by_owner;
   void regenerate_jobs_by_owner();
+
+  long long int number_of_running_jobs_for_group(const std::string& group_name) const;
+  long long int number_of_running_jobs_for_user(const std::string& user_name) const;
 
 private:
   mutable std::unordered_map<std::string,long long int> running_jobs_by_group; // cache

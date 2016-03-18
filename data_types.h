@@ -195,9 +195,8 @@ struct state_count
 
 struct queue_info
   {
-
-unsigned is_started:
-  1; /* is queue started */
+  /* queue is started - can be scheduled */
+  bool is_started;
 
 unsigned is_exec:
   1;  /* is the queue an execution queue */
@@ -231,8 +230,8 @@ unsigned is_admin_queue : 1; /* admin job queue */
   int priority;                 /* priority of queue */
   time_t starving_support;      /* time required for jobs to starve */
 
-  JobInfo **jobs;  /* array of jobs that reside in queue */
-  JobInfo **running_jobs; /* array of jobs in the running state */
+  std::vector<JobInfo*> jobs; /* array of jobs that reside in queue OWNED */
+  std::vector<JobInfo*> running_jobs; /* array of jobs in the running state */
 
   unsigned excl_node_count;
   unsigned excl_node_capacity;
@@ -241,6 +240,21 @@ unsigned is_admin_queue : 1; /* admin job queue */
   char *fairshare_tree;
 
   double queue_cost;
+
+  void update_on_job_run(JobInfo *j);
+
+  long long int number_of_running_jobs_for_group(const std::string& group_name) const;
+  long long int number_of_running_jobs_for_user(const std::string& user_name) const;
+  long long int number_of_running_cores() const;
+  long long int number_of_running_cores_for_group(const std::string& group_name) const;
+  long long int number_of_running_cores_for_user(const std::string& user_name) const;
+
+private:
+  mutable std::unordered_map<std::string,long long int> running_jobs_by_group; // cache
+  mutable std::unordered_map<std::string,long long int> running_jobs_by_user; // cache
+  mutable std::unordered_map<std::string,long long int> running_cores_by_group; // cache
+  mutable std::unordered_map<std::string,long long int> running_cores_by_user; // cache
+  mutable std::pair<bool,long long int> running_cores; // cache
   };
 
 #include "JobInfo.h"
@@ -290,13 +304,6 @@ unsigned none :
 
 unsigned all  :
   1;
-  };
-
-struct sort_info
-  {
-  enum sort_type sort;
-  const char *config_name;
-  int (*cmp_func)(const void *, const void*);
   };
 
 struct timegap
@@ -397,6 +404,8 @@ unsigned priority_fairshare :
   };
 
 /* for description of these bits, check the PBS admin guide or scheduler IDS */
+
+struct sort_info;
 
 struct status
   {
