@@ -170,7 +170,7 @@ server_info *query_server(int pbs_sd)
   while (*qinfo != NULL)
     {
     sinfo -> num_queues++;
-    total_states(&(sinfo -> sc), &((*qinfo) -> sc));
+    sinfo->sc += (*qinfo)->sc;
     qinfo++;
     }
 
@@ -371,8 +371,6 @@ server_info *new_server_info()
   sinfo -> tokens = NULL;
 
   sinfo -> job_start_timeout = DEFAULT_JOB_START_TIMEOUT;
-
-  init_state_count(&(sinfo -> sc));
 
   return sinfo;
   }

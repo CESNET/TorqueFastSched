@@ -173,7 +173,7 @@ void update_usage_on_run(JobInfo *jinfo) // TODO zaintegrovat mem
 
 JobInfo *extract_fairshare(server_info *sinfo)
   {
-  JobInfo *max = NULL;
+  JobInfo *max = nullptr;
   int max_priority = -1;
   double max_value = -1;
   double curr_value = -1;

@@ -86,10 +86,8 @@
 
 #include <time.h>
 
-enum ClusterMode { ClusterNone, ClusterCreate, ClusterUse };
-enum JobState { JobNoState, JobQueued, JobRunning, JobHeld, JobWaiting, JobTransit, JobExiting, JobSuspended, JobCompleted, JobCrossRun };
-static const char* JobStateString[] = { "none", "queued", "running", "held", "waiting", "transit", "exiting", "suspended", "completed", NULL };
 
+enum ClusterMode { ClusterNone, ClusterCreate, ClusterUse };
 
 #include "torque.h"
 #include "constant.h"
@@ -177,21 +175,8 @@ struct token
   };
 
 
-struct state_count
-  {
-  int running;                  /* number of jobs in the running state*/
-  int queued;                   /* number of jobs in the queued state */
-  int held;                     /* number of jobs in the held state */
-  int transit;                  /* number of jobs in the transit state */
-  int waiting;                  /* number of jobs in the waiting state */
-  int exiting;                  /* number of jobs in the exiting state */
-  int suspended;  /* number of jobs in the suspended state */
-  int completed;                /* number of jobs in the completed state */
-  int crossrun;
-  int total;   /* total number of jobs in all states */
-  };
-
 #include "ServerInfo.h"
+#include "SchedulerCore_StateCount.h"
 
 struct queue_info
   {
@@ -220,7 +205,7 @@ unsigned is_admin_queue : 1; /* admin job queue */
 
   struct server_info *server;   /* server where queue resides */
   char *name;                   /* queue name */
-  state_count sc;               /* number of jobs in different states */
+  Scheduler::Core::StateCount sc;               /* number of jobs in different states */
   int max_run;                  /* max jobs that can run in queue */
   int max_user_run;             /* max jobs that a user can run in queue */
   int max_group_run;            /* max jobs that a group can run in a queue */

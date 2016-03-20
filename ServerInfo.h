@@ -10,7 +10,7 @@
 
 #include "data_types.h"
 #include "base/DynamicResource.h"
-
+#include "SchedulerCore_StateCount.h"
 #define DEFAULT_JOB_START_TIMEOUT 60
 
 struct server_info
@@ -28,7 +28,7 @@ public:
   int max_group_run;  /* max jobs a group can run at one time */
   int num_queues;  /* number of queues that reside on the server */
   int num_nodes;  /* number of nodes associated with the server */
-  state_count sc;  /* number of jobs in each state */
+  Scheduler::Core::StateCount sc;  /* number of jobs in each state */
   queue_info **queues;  /* array of queues */
   std::vector<JobInfo*> jobs; /* array of all jobs on the server */
   std::vector<JobInfo*> running_jobs; /* array of jobs in the running state */

@@ -81,7 +81,6 @@
 #define SERVER_INFO_H
 
 #include "torque.h"
-#include "state_count.h"
 #include "data_types.h"
 
 /*

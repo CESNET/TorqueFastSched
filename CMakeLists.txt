@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(torque-fast-sched VERSION 1.0.4)
+project(torque-fast-sched VERSION 1.0.5)
 
 find_file(HAVE_PBS_CACHE_API_H pbs_cache_api.h /usr/include)
 if(NOT HAVE_PBS_CACHE_API_H)
@@ -23,7 +23,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wwrite-strings -Wformat -Wformat=2 -Wpa
 
 #-Wpadded -Weffc++ -Wredundant-decls
 
-set(SOURCE_FILES pbs_sched.cpp server_info.cpp ServerInfo.cpp check.cpp dedtime.cpp fairshare.cpp fifo.cpp globals.cpp job_info.cpp JobInfo.cpp JobLog.cpp misc.cpp node_info.cpp NodeInfo.cpp NodeSort.cpp nodespec.cpp parse.cpp prev_job_info.cpp prime.cpp queue_info.cpp SchedulerRealm.cpp sort.cpp state_count.cpp utility.cpp logic/FairshareTree.cpp logic/JobAssign.cpp logic/NodeFilters.cpp logic/NodeLogic.cpp base/Resource.cpp base/ResourceSet.cpp base/PropRegistry.cpp base/NodeState.cpp base/NodeData.cpp base/MiscHelpers.cpp base/DynamicResource.cpp site_pbs_cache.cpp SchedulerCore_ConnectionMgr.cpp SchedulerCore_RescInfoDb.cpp)
+set(SOURCE_FILES pbs_sched.cpp server_info.cpp ServerInfo.cpp check.cpp dedtime.cpp fairshare.cpp fifo.cpp globals.cpp job_info.cpp JobInfo.cpp JobLog.cpp misc.cpp node_info.cpp NodeInfo.cpp NodeSort.cpp nodespec.cpp parse.cpp prev_job_info.cpp prime.cpp queue_info.cpp SchedulerRealm.cpp sort.cpp utility.cpp logic/FairshareTree.cpp logic/JobAssign.cpp logic/NodeFilters.cpp logic/NodeLogic.cpp base/Resource.cpp base/ResourceSet.cpp base/PropRegistry.cpp base/NodeState.cpp base/NodeData.cpp base/MiscHelpers.cpp base/DynamicResource.cpp site_pbs_cache.cpp SchedulerCore_ConnectionMgr.cpp SchedulerCore_RescInfoDb.cpp SchedulerCore_StateCount.cpp SchedulerCore_StateCount.h)
 add_executable(torque-fast-sched ${SOURCE_FILES} legacy/site_pbs_cache_common.c)
 
 TARGET_LINK_LIBRARIES(torque-fast-sched torque pbscache)

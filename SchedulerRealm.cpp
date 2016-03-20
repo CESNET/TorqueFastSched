@@ -94,8 +94,8 @@ bool World::fetch_servers()
           // add jobs to queue
           qinfo->jobs.insert(end(qinfo->jobs),begin(jobs),end(jobs));
 
-          init_state_count(&qinfo->sc);
-          count_states(qinfo->jobs, qinfo->sc);
+          qinfo->sc.reset();
+          qinfo->sc.count_states(qinfo->jobs);
 
           qinfo->running_jobs.clear();
           copy_if(begin(qinfo->jobs),end(qinfo->jobs),back_inserter(qinfo->running_jobs),
@@ -104,8 +104,8 @@ bool World::fetch_servers()
           // add jobs to server
           p_info->jobs.insert(end(p_info->jobs),begin(jobs),end(jobs));
 
-          init_state_count(&p_info->sc);
-          count_states(p_info->jobs, p_info->sc);
+          p_info->sc.reset();
+          p_info->sc.count_states(p_info->jobs);
 
           p_info->running_jobs.clear();
           copy_if(begin(p_info->jobs),end(p_info->jobs),back_inserter(p_info->running_jobs),
@@ -146,8 +146,8 @@ void World::update_fairshare()
       std::vector<JobInfo*>& jobs = p_info->jobs;
       group_info *user = p_last_running[i].ginfo;
 
-      int j;
-      for (j = 0; jobs[j] != NULL; j++)
+      size_t j;
+      for (j = 0; j < jobs.size(); j++)
         {
         if (jobs[j] -> state == JobCompleted || jobs[j] -> state == JobExiting || jobs[j] -> state == JobRunning)
           if (!strcmp(p_last_running[i].name, jobs[j] -> job_id.c_str()))

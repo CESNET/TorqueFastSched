@@ -319,7 +319,7 @@ queue_info **query_queues(int pbs_sd, server_info *sinfo)
       update_jobs_cant_run(pbs_sd, qinfo -> jobs, NULL, comment, START_WITH_JOB);
       }
 
-    count_states(qinfo->jobs, qinfo -> sc);
+    qinfo->sc.count_states(qinfo->jobs);
 
     qinfo->running_jobs.clear();
     qinfo->running_jobs.reserve(qinfo->jobs.size()/2);
@@ -561,8 +561,6 @@ queue_info *new_queue_info()
   qinfo -> priority  = 0;
   qinfo -> starving_support = -1;
   qinfo -> is_admin_queue = 0;
-
-  init_state_count(&(qinfo -> sc));
 
   qinfo -> max_run  = RESC_INFINITY;
 

@@ -7,6 +7,7 @@
 
 #include "data_types.h"
 #include "legacy/pbs_ifl.h"
+#include "queue_info.h"
 
 struct JobInfo
   {
@@ -36,7 +37,7 @@ struct JobInfo
   /* Groupname of the owner of the job*/
   std::string group;
   /* Job state */
-  JobState state;
+  Scheduler::Core::JobState state;
   /* Job can never run */
   bool can_never_run;
   /* Job can not run now */
@@ -71,7 +72,7 @@ struct JobInfo
   long get_walltime() const;
   double calculate_fairshare_cost(const std::vector<node_info *>& nodes) const;
   time_t completion_time();
-  const char* state_string() { return JobStateString[state]; }
+
   
   // REFACTORED
   // the following code has already been refactored
