@@ -154,7 +154,7 @@ void World::update_fairshare()
             break;
         }
 
-      if (jobs[j] != NULL)
+      if (j < jobs.size())
         {
         if (jobs[j]->calculated_fairshare != 0)
           {
