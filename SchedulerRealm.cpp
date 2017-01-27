@@ -277,7 +277,7 @@ int World::try_run_job(JobInfo *jinfo)
 
   bool remote = false;
   int socket;
-  if (jinfo->job_id.find(conf.local_server) == string::npos)
+  if (strcmp(jinfo->queue->server->name,conf.local_server))
     {
     remote = true;
     string jobid = jinfo->job_id;
